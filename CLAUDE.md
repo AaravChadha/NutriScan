@@ -64,7 +64,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 1 — Project Setup `March 31 – April 1`
 > Goal: Get a running Streamlit skeleton with all dependencies installed.
 
-- [ ] **1.1 Scaffolding**
+- [x] **1.1 Scaffolding**
   - [x] 1.1.1 Create directory structure (all folders and `__init__.py` files)
   - [x] 1.1.2 Create `requirements.txt` with all packages listed above
   - [x] 1.1.3 Create `.gitignore` (include `.env`, `__pycache__/`, `.venv/`, `*.pyc`)
@@ -72,15 +72,15 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 1.1.5 Set up virtual environment and install dependencies
   - [x] 1.1.6 Install Tesseract OCR system dependency
 
-- [ ] **1.2 Minimal Streamlit App**
+- [x] **1.2 Minimal Streamlit App**
   - [x] 1.2.1 Create `app.py` with page config (`st.set_page_config(page_title="NutriScan", layout="wide")`)
   - [x] 1.2.2 Add title, sidebar placeholder, and two tabs ("Upload Label", "Manual Entry")
-  - [ ] 1.2.3 Verify `streamlit run app.py` launches in browser
+  - [x] 1.2.3 Verify `streamlit run app.py` launches in browser
 
-- [ ] **1.3 Git Init**
-  - [ ] 1.3.1 Initialize git repo
-  - [ ] 1.3.2 Create initial commit with scaffolding
-  - [ ] 1.3.3 Push to GitHub (confirm `.env` is not included)
+- [x] **1.3 Git Init**
+  - [x] 1.3.1 Initialize git repo
+  - [x] 1.3.2 Create initial commit with scaffolding
+  - [x] 1.3.3 Push to GitHub (confirm `.env` is not included)
 
 ---
 
