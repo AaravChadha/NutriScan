@@ -6,7 +6,7 @@ NutriScan is an AI-powered food nutrition label analyzer for personalized dietar
 ## Tech Stack
 - **Python** + **Streamlit** (pure Python frontend)
 - **Tesseract** via `pytesseract` + **OpenCV** for OCR
-- **Groq API** with Llama 3.3-70b-versatile (free tier)
+- **Groq API** with Llama 3.3-70b-versatile + Llama 3.2-90b-vision-preview (free tier)
 - **USDA FoodData Central API** (free key from api.data.gov)
 - API keys in `.env` (gitignored), `.env.example` committed for teammates
 
@@ -29,9 +29,12 @@ NutriScan/
 │   │   ├── models.py           # Dataclasses
 │   │   ├── fda_guidelines.py   # DV% computation
 │   │   └── usda_client.py      # USDA API client
+│   ├── vision/
+│   │   └── food_identifier.py  # Groq Vision API food recognition
 │   └── ui/
 │       ├── components.py       # Reusable Streamlit widgets
 │       ├── pages_upload.py     # Image upload tab
+│       ├── pages_snap.py       # Snap Food photo tab
 │       ├── pages_manual.py     # Manual entry tab
 │       └── pages_results.py    # Results display
 ├── data/
@@ -74,7 +77,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [x] **1.2 Minimal Streamlit App**
   - [x] 1.2.1 Create `app.py` with page config (`st.set_page_config(page_title="NutriScan", layout="wide")`)
-  - [x] 1.2.2 Add title, sidebar placeholder, and two tabs ("Upload Label", "Manual Entry")
+  - [x] 1.2.2 Add title, sidebar placeholder, and three tabs ("Upload Label", "Snap Food", "Manual Entry")
   - [x] 1.2.3 Verify `streamlit run app.py` launches in browser
 
 - [x] **1.3 Git Init**
@@ -189,6 +192,38 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [ ] 3.3.6.2 Include text area for ingredients list
     - [ ] 3.3.6.3 "Analyze" button triggers LLM analysis
 
+- [ ] **3.4 Food Photo Recognition**
+  > Upload a photo of actual food (not a label) → AI identifies items + portions → pulls nutrition data from USDA → feeds into existing analysis pipeline.
+
+  - [ ] **3.4.1 Vision Prompt** (`src/llm/prompts.py`)
+    - [ ] 3.4.1.1 Write vision system prompt that instructs the model to identify food items, estimate portions (in grams), and return structured JSON
+    - [ ] 3.4.1.2 Define JSON response structure: `foods` array with `name`, `estimated_grams`, `confidence` per item
+    - [ ] 3.4.1.3 Include instruction to be conservative on portions and flag uncertainty
+
+  - [ ] **3.4.2 Food Identifier** (`src/vision/food_identifier.py`)
+    - [ ] 3.4.2.1 Write `identify_food(image_bytes) -> list[dict]` using Groq with `llama-3.2-90b-vision-preview`
+    - [ ] 3.4.2.2 Encode image to base64, send as image content in chat completion
+    - [ ] 3.4.2.3 Parse JSON response into list of identified food items
+    - [ ] 3.4.2.4 Add try/except with user-friendly error on failure
+
+  - [ ] **3.4.3 USDA Bridge** (`src/vision/food_identifier.py`)
+    - [ ] 3.4.3.1 Write `lookup_food_nutrition(food_name, grams, usda_client) -> NutritionData` — search USDA for the food, scale nutrition values to estimated portion
+    - [ ] 3.4.3.2 Write `aggregate_nutrition(food_items) -> NutritionData` — combine multiple foods into one `NutritionData` for analysis
+    - [ ] 3.4.3.3 Handle USDA miss gracefully — if food not found, flag it to the user
+
+  - [ ] **3.4.4 Snap Food Page** (`src/ui/pages_snap.py`)
+    - [ ] 3.4.4.1 `st.file_uploader` or `st.camera_input` for food photo
+    - [ ] 3.4.4.2 Display uploaded photo
+    - [ ] 3.4.4.3 "Identify Food" button → call vision model → show identified items + portions
+    - [ ] 3.4.4.4 Show editable table of identified foods (user can correct names/portions)
+    - [ ] 3.4.4.5 "Get Nutrition & Analyze" button → USDA lookup → populate `nutrition_editor` → LLM analysis
+    - [ ] 3.4.4.6 Show disclaimer: "Portions are AI-estimated — adjust if needed for accuracy"
+
+  - [ ] **3.4.5 Vision Testing**
+    - [ ] 3.4.5.1 Manual test: photo of simple meal (e.g. apple, sandwich) → check identified items
+    - [ ] 3.4.5.2 Manual test: photo of complex plate → verify reasonable portion estimates
+    - [ ] 3.4.5.3 Test USDA bridge with known foods → verify nutrition values are reasonable
+
 ---
 
 ### Phase 4 — Integration `April 7 – April 9`
@@ -197,12 +232,14 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - [ ] **4.1 Wire Up the Pipeline**
   - [ ] 4.1.1 Connect upload page → OCR pipeline → editable form → LLM analysis → results display
   - [ ] 4.1.2 Connect manual entry page → LLM analysis → results display
-  - [ ] 4.1.3 Ensure health profile sidebar feeds into both flows
+  - [ ] 4.1.3 Connect snap food page → vision model → USDA lookup → editable form → LLM analysis → results display
+  - [ ] 4.1.4 Ensure health profile sidebar feeds into all three flows
 
 - [ ] **4.2 UX Flow Verification**
   - [ ] 4.2.1 Upload a clear photo → verify OCR extracts → edit → confirm → see results
   - [ ] 4.2.2 Manual entry → fill form → see results
-  - [ ] 4.2.3 Change health profile → re-analyze → verify recommendations change
+  - [ ] 4.2.3 Snap food photo → verify identified items → adjust → see results
+  - [ ] 4.2.4 Change health profile → re-analyze → verify recommendations change
 
 - [ ] **4.3 Error Handling**
   - [ ] 4.3.1 Blurry/bad image → show warning + suggest manual entry
@@ -243,6 +280,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 6.2.2 Scenario 2: Upload label with peanut-allergic profile → allergen flagging
   - [ ] 6.2.3 Scenario 3: Manual entry of high-sodium product with "low sodium" goal → goal mismatch
   - [ ] 6.2.4 Scenario 4: Product with preservatives → preservative warnings
+  - [ ] 6.2.5 Scenario 5: Snap photo of a meal → AI identifies foods → nutrition breakdown + analysis
 
 - [ ] **6.3 Presentation Materials**
   - [ ] 6.3.1 Screenshots of app for poster/slides
@@ -262,7 +300,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 | Person | Phase 3 Track | Other Phases |
 |--------|--------------|--------------|
-| Aarav  | 3.2 LLM Integration | Phases 1-2 setup, Phase 4 integration, presentation lead |
+| Aarav  | 3.2 LLM Integration + 3.4 Food Photo Recognition | Phases 1-2 setup, Phase 4 integration, presentation lead |
 | Neil   | 3.1 OCR Pipeline | Phase 5.1 OCR evaluation |
 | Nuv    | 3.3 USDA + Streamlit UI | Phase 5.2 LLM evaluation, Phase 6 polish |
 
@@ -272,6 +310,6 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ## Verification Summary
 - **Unit tests:** OCR parsing, DV% math, prompt construction, response parsing (`pytest tests/`)
-- **Integration tests (manual):** Clear photo, blurry photo, allergen scenario, diet goal scenario, empty profile
-- **Evaluation:** OCR field accuracy on 5-10 images; LLM checklist on 5 test cases
-- **Demo smoke test:** Run all 4 demo scenarios morning of April 16
+- **Integration tests (manual):** Clear photo, blurry photo, food snap, allergen scenario, diet goal scenario, empty profile
+- **Evaluation:** OCR field accuracy on 5-10 images; LLM checklist on 5 test cases; vision food ID spot checks
+- **Demo smoke test:** Run all 5 demo scenarios morning of April 16
