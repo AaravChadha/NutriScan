@@ -90,19 +90,19 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 2 — Data Models + FDA Reference `April 1 – April 2`
 > Goal: Build the data backbone that every other module depends on.
 
-- [ ] **2.1 Dataclasses** (`src/nutrition/models.py`)
-  - [ ] 2.1.1 Define `NutritionData` — calories, total_fat, saturated_fat, trans_fat, cholesterol, sodium, total_carbs, dietary_fiber, total_sugars, added_sugars, protein, vitamin_d, calcium, iron, potassium, serving_size, servings_per_container, ingredients_list
-  - [ ] 2.1.2 Define `HealthProfile` — caloric_target, dietary_goals (list[str]), allergens (list[str]), restrictions (list[str])
-  - [ ] 2.1.3 Define `AnalysisResult` — allergen_flags, preservative_flags, nutrient_flags, goal_alignment, recommendations, overall_risk, summary
+- [x] **2.1 Dataclasses** (`src/nutrition/models.py`)
+  - [x] 2.1.1 Define `NutritionData` — calories, total_fat, saturated_fat, trans_fat, cholesterol, sodium, total_carbs, dietary_fiber, total_sugars, added_sugars, protein, vitamin_d, calcium, iron, potassium, serving_size, servings_per_container, ingredients_list
+  - [x] 2.1.2 Define `HealthProfile` — caloric_target, dietary_goals (list[str]), allergens (list[str]), restrictions (list[str])
+  - [x] 2.1.3 Define `AnalysisResult` — allergen_flags, preservative_flags, nutrient_flags, goal_alignment, recommendations, overall_risk, summary
 
-- [ ] **2.2 FDA Daily Values** (`data/fda_daily_values.json`)
-  - [ ] 2.2.1 Create JSON file with FDA 2,000-calorie daily reference values for all nutrients
-  - [ ] 2.2.2 Source values from FDA.gov (public data)
+- [x] **2.2 FDA Daily Values** (`data/fda_daily_values.json`)
+  - [x] 2.2.1 Create JSON file with FDA 2,000-calorie daily reference values for all nutrients
+  - [x] 2.2.2 Source values from FDA.gov (public data)
 
-- [ ] **2.3 DV% Computation** (`src/nutrition/fda_guidelines.py`)
-  - [ ] 2.3.1 Write `load_fda_values()` to read the JSON file
-  - [ ] 2.3.2 Write `compute_dv_percentages(nutrition_data: NutritionData) -> dict`
-  - [ ] 2.3.3 Test manually: 20g total fat → ~26% DV (based on 78g reference)
+- [x] **2.3 DV% Computation** (`src/nutrition/fda_guidelines.py`)
+  - [x] 2.3.1 Write `load_fda_values()` to read the JSON file
+  - [x] 2.3.2 Write `compute_dv_percentages(nutrition_data: NutritionData) -> dict`
+  - [x] 2.3.3 Test manually: 20g total fat → ~26% DV (based on 78g reference)
 
 ---
 
@@ -192,7 +192,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [ ] 3.3.6.2 Include text area for ingredients list
     - [ ] 3.3.6.3 "Analyze" button triggers LLM analysis
 
-- [ ] **3.4 Food Photo Recognition**
+- [ ] **3.4 Food Photo Recognition (Track D — Aarav)**
   > Upload a photo of actual food (not a label) → AI identifies items + portions → pulls nutrition data from USDA → feeds into existing analysis pipeline.
 
   - [ ] **3.4.1 Vision Prompt** (`src/llm/prompts.py`)
@@ -301,8 +301,8 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 | Person | Phase 3 Track | Other Phases |
 |--------|--------------|--------------|
 | Aarav  | 3.2 LLM Integration + 3.4 Food Photo Recognition | Phases 1-2 setup, Phase 4 integration, presentation lead |
-| Neil   | 3.1 OCR Pipeline | Phase 5.1 OCR evaluation |
-| Nuv    | 3.3 USDA + Streamlit UI | Phase 5.2 LLM evaluation, Phase 6 polish |
+| Neil   | 3.1 OCR Pipeline | Phase 5.1 OCR evaluation, Phase 5.2 LLM evaluation |
+| Nuv    | 3.3 USDA + Streamlit UI | Phase 6 polish |
 
 *All three collaborate on Phase 4 (integration) and Phase 6 (demo prep).*
 

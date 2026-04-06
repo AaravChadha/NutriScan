@@ -1,0 +1,32 @@
+{
+  "calories": 2000,
+  "total_fat": 78,
+  "saturated_fat": 20,
+  "trans_fat": null,
+  "cholesterol": 300,
+  "sodium": 2300,
+  "total_carbs": 275,
+  "dietary_fiber": 28,
+  "total_sugars": null,
+  "added_sugars": 50,
+  "protein": 50,
+  "vitamin_d": 20,
+  "calcium": 1300,
+  "iron": 18,
+  "potassium": 4700,
+  "units": {
+    "calories": "kcal",
+    "total_fat": "g",
+    "saturated_fat": "g",
+    "cholesterol": "mg",
+    "sodium": "mg",
+    "total_carbs": "g",
+    "dietary_fiber": "g",
+    "added_sugars": "g",
+    "protein": "g",
+    "vitamin_d": "mcg",
+    "calcium": "mg",
+    "iron": "mg",
+    "potassium": "mg"
+  }
+}
