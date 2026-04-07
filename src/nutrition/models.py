@@ -41,3 +41,24 @@ class AnalysisResult:
     recommendations: list[str] = field(default_factory=list)
     overall_risk: str = "unknown"
     summary: str = ""
+
+
+@dataclass
+class PantryItem:
+    name: str = ""
+    source: str = ""  # "label_scan" | "photo_id" | "manual"
+    nutrition: Optional[NutritionData] = None
+    estimated_grams: Optional[float] = None
+    quantity: str = ""
+
+
+@dataclass
+class GeneratedRecipe:
+    title: str = ""
+    servings: int = 1
+    ingredients_used: list[str] = field(default_factory=list)
+    additional_ingredients_needed: list[str] = field(default_factory=list)
+    instructions: list[str] = field(default_factory=list)
+    estimated_nutrition: Optional[NutritionData] = None
+    nutrition_highlights: list[str] = field(default_factory=list)
+    tips: str = ""

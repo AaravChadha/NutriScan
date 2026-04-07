@@ -226,6 +226,34 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ---
 
+### Phase 3.5 — Recipe Generator `April 9 – April 11`
+> Goal: Add a 4th tab that lets users build a pantry from scanned labels or food photos, then generates a nutritious recipe. Combats food insecurity angle for the symposium.
+
+- [x] **3.5.1 Data Models** (`src/nutrition/models.py`)
+  - [x] 3.5.1.1 Add `PantryItem` dataclass — name, source, nutrition, estimated_grams, quantity
+  - [x] 3.5.1.2 Add `GeneratedRecipe` dataclass — title, servings, ingredients_used, additional_ingredients_needed, instructions, estimated_nutrition, nutrition_highlights, tips
+
+- [x] **3.5.2 Recipe Prompt Templates** (`src/llm/prompts.py`)
+  - [x] 3.5.2.1 Write `build_recipe_system_prompt()` — nutritionist+chef persona, JSON output schema
+  - [x] 3.5.2.2 Write `build_recipe_user_prompt(pantry_items, health_profile)` — lists ingredients + health profile
+
+- [x] **3.5.3 Groq Recipe Generation** (`src/llm/groq_client.py`)
+  - [x] 3.5.3.1 Write `GroqClient` class with `_call_with_retry()` and retry on rate limit
+  - [x] 3.5.3.2 Write `generate_recipe(pantry_items, health_profile) -> GeneratedRecipe`
+  - [x] 3.5.3.3 Parse JSON response into `GeneratedRecipe` with `NutritionData` for estimated nutrition
+
+- [x] **3.5.4 Recipe Generator Tab UI** (`src/ui/pages_recipe.py`)
+  - [x] 3.5.4.1 Pantry builder — label scan column + food photo column + manual add expander
+  - [x] 3.5.4.2 Pantry display — item list with remove buttons + clear all
+  - [x] 3.5.4.3 Recipe generation — generate/regenerate buttons, recipe display with instructions
+  - [x] 3.5.4.4 Nutrition breakdown — DV% bar chart using `compute_dv_percentages`
+  - [x] 3.5.4.5 Nutrition highlights, tips, and AI disclaimer
+
+- [x] **3.5.5 Wire Up in app.py**
+  - [x] 3.5.5.1 Add 4th tab "Recipe Generator" and import `render_recipe_tab()`
+
+---
+
 ### Phase 4 — Integration `April 7 – April 9`
 > Goal: Wire the three tracks together into one working app.
 
@@ -267,44 +295,83 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ---
 
-### Phase 6 — Polish + Demo Prep `April 12 – April 16`
-> Goal: App looks clean, demo is rehearsed, ready to present.
+### Phase 6 — Local Resource Finder `April 12 – April 14`
+> Goal: Analyze the user's diet for nutrient gaps, then recommend nearby affordable places to fill those gaps — grocery stores, farmers markets, food banks, community gardens. Completes the food insecurity story.
 
-- [ ] **6.1 App Polish**
-  - [ ] 6.1.1 Clean up Streamlit styling (page title, icon, colors)
-  - [ ] 6.1.2 Add brief app description/instructions on main page
-  - [ ] 6.1.3 Final error handling pass — no tracebacks during demo
+- [ ] **6.1 Nutrient Gap Analysis**
+  - [ ] 6.1.1 Compare user's scanned/entered foods against FDA daily values to identify deficiencies
+  - [ ] 6.1.2 Generate a "missing nutrients" summary (e.g., "Low on iron, calcium, Vitamin D")
+  - [ ] 6.1.3 Map deficiencies to food categories (leafy greens, dairy, legumes, etc.)
 
-- [ ] **6.2 Demo Scenarios**
-  - [ ] 6.2.1 Scenario 1: Upload a clear label photo with no health concerns → basic analysis
-  - [ ] 6.2.2 Scenario 2: Upload label with peanut-allergic profile → allergen flagging
-  - [ ] 6.2.3 Scenario 3: Manual entry of high-sodium product with "low sodium" goal → goal mismatch
-  - [ ] 6.2.4 Scenario 4: Product with preservatives → preservative warnings
-  - [ ] 6.2.5 Scenario 5: Snap photo of a meal → AI identifies foods → nutrition breakdown + analysis
+- [ ] **6.2 Local Resource Lookup**
+  - [ ] 6.2.1 Research free/affordable location APIs (Google Places, USDA Food Desert Atlas, FoodFinder API, or Feeding America locator)
+  - [ ] 6.2.2 Write `find_local_resources(zip_code, resource_type) -> list[dict]` — returns nearby places with name, address, distance, type
+  - [ ] 6.2.3 Resource types: grocery stores, farmers markets, food banks, community gardens, WIC/SNAP retailers
+  - [ ] 6.2.4 Fallback: curated list of West Lafayette / Lafayette community resources for video
 
-- [ ] **6.3 Presentation Materials**
-  - [ ] 6.3.1 Screenshots of app for poster/slides
-  - [ ] 6.3.2 Write up evaluation results
-  - [ ] 6.3.3 Prepare talking points for each demo scenario
-  - [ ] 6.3.4 Practice demo run-through
+- [ ] **6.3 LLM Recommendation Layer**
+  - [ ] 6.3.1 Write prompt: given nutrient gaps + nearby resources → personalized advice ("You're low on iron — the Lafayette Farmers Market on Main St has affordable leafy greens on Saturdays")
+  - [ ] 6.3.2 Include budget-conscious framing (seasonal produce, bulk staples, food bank hours)
 
-- [ ] **6.4 Day-of Checklist** `April 16`
-  - [ ] 6.4.1 Verify `.env` has valid API keys on demo laptop
-  - [ ] 6.4.2 Run all demo scenarios — confirm no crashes
-  - [ ] 6.4.3 Have manual entry as backup if OCR/image upload has issues
-  - [ ] 6.4.4 Keep phone charged for taking live label photos (if doing live demo)
+- [ ] **6.4 UI — "Find Food Near You" Tab**
+  - [ ] 6.4.1 Zip code / location input
+  - [ ] 6.4.2 Display nutrient gap summary
+  - [ ] 6.4.3 Map or list of recommended local resources
+  - [ ] 6.4.4 Personalized LLM advice for each gap
 
 ---
 
-## Suggested Task Division
+### Phase 7 — Presentation + Video `April 14 – April 16`
+> Goal: Research talk with recorded video walkthrough of the app. No live demo needed.
 
-| Person | Phase 3 Track | Other Phases |
-|--------|--------------|--------------|
-| Aarav  | 3.2 LLM Integration + 3.4 Food Photo Recognition | Phases 1-2 setup, Phase 4 integration, presentation lead |
-| Neil   | 3.1 OCR Pipeline | Phase 5.1 OCR evaluation, Phase 5.2 LLM evaluation |
-| Nuv    | 3.3 USDA + Streamlit UI | Phase 6 polish |
+- [ ] **7.1 App Polish**
+  - [ ] 7.1.1 Clean up Streamlit styling (page title, icon, colors)
+  - [ ] 7.1.2 Add brief app description/instructions on main page
+  - [ ] 7.1.3 Final error handling pass — no tracebacks during video recording
 
-*All three collaborate on Phase 4 (integration) and Phase 6 (demo prep).*
+- [ ] **7.2 Video Walkthrough Scenarios**
+  - [ ] 7.2.1 Scenario 1: Upload a clear label photo with no health concerns → basic analysis
+  - [ ] 7.2.2 Scenario 2: Upload label with peanut-allergic profile → allergen flagging
+  - [ ] 7.2.3 Scenario 3: Manual entry of high-sodium product with "low sodium" goal → goal mismatch
+  - [ ] 7.2.4 Scenario 4: Product with preservatives → preservative warnings
+  - [ ] 7.2.5 Scenario 5: Snap photo of a meal → AI identifies foods → nutrition breakdown + analysis
+  - [ ] 7.2.6 Scenario 6: Recipe from scanned labels (cereal, beans, milk, bread) with "high protein" goal
+  - [ ] 7.2.7 Scenario 7: Food insecurity — recipe from rice, canned beans, onion → maximize nutrition
+  - [ ] 7.2.8 Scenario 8: Nutrient gap analysis → local resource recommendations
+  - [ ] 7.2.9 Scenario 9: Allergen-safe recipe — peanut+dairy allergens set, verify recipe excludes them
+
+- [ ] **7.3 Record Video**
+  - [ ] 7.3.1 Run through all scenarios in the app, screen record each
+  - [ ] 7.3.2 Edit into a cohesive walkthrough video (2-4 minutes)
+  - [ ] 7.3.3 Add voiceover or captions explaining each feature
+
+- [ ] **7.4 Presentation Slides**
+  - [ ] 7.4.1 Problem statement — food insecurity + nutrition literacy gap
+  - [ ] 7.4.2 Solution overview — NutriScan's 4 features (label scan, food snap, recipe generator, local resources)
+  - [ ] 7.4.3 Technical architecture slide (OCR, Groq LLM, USDA API, Vision)
+  - [ ] 7.4.4 Evaluation results (OCR accuracy, LLM checklist scores)
+  - [ ] 7.4.5 Embed or link video walkthrough
+  - [ ] 7.4.6 Future work — expanded local resources, multi-language support, mobile app
+  - [ ] 7.4.7 Practice talk (aim for ~10 min depending on symposium format)
+
+- [ ] **7.5 Day-of Checklist** `April 16`
+  - [ ] 7.5.1 Slides exported/uploaded and accessible
+  - [ ] 7.5.2 Video plays correctly from slides
+  - [ ] 7.5.3 Backup: have app running on laptop in case of Q&A ("can you show me X?")
+
+---
+
+## Suggested Task Division (~33% each, build work only)
+
+| Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
+|--------|---------|---------|---------|---------|
+| **Aarav** | 3.2 LLM Integration + 3.4 Vision (minus Snap UI) + 3.5 Recipe (done) | Integration lead — wires all tracks together | 5.2 LLM eval | — |
+| **Neil** | 3.1 OCR Pipeline | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+| **Nuv** | 3.3 USDA + Streamlit UI + 3.4.4 Snap Food Page UI | Integrates own UI track | — | 6.4 Find Food Near You tab UI |
+
+### Already Completed (Aarav)
+- Phases 1-2: Project scaffolding, data models, FDA guidelines
+- Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, wiring)
 
 ---
 

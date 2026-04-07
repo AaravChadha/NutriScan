@@ -14,8 +14,10 @@ with st.sidebar:
     st.header("Your Health Profile")
     st.info("Health profile settings will appear here.")
 
-# Main area — three tabs
-tab1, tab2, tab3 = st.tabs(["📷 Upload Label", "🍔 Snap Food", "✏️ Manual Entry"])
+# Main area — four tabs
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["📷 Upload Label", "🍔 Snap Food", "✏️ Manual Entry", "🍳 Recipe Generator"]
+)
 
 with tab1:
     st.write("Upload a photo of a nutrition label to get started.")
@@ -25,3 +27,8 @@ with tab2:
 
 with tab3:
     st.write("Manually enter nutrition information.")
+
+with tab4:
+    from src.ui.pages_recipe import render_recipe_tab
+
+    render_recipe_tab()
