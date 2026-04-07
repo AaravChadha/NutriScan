@@ -1,13 +1,14 @@
 # NutriScan Build Plan
 
 ## Context
-NutriScan is an AI-powered food nutrition label analyzer for personalized dietary insights, being built by 3 Purdue freshmen (Aarav, Neil, Nuv) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
+NutriScan is an AI-powered nutrition assistant that combats food insecurity through personalized dietary insights. It scans nutrition labels (OCR), identifies food from photos (vision AI), generates nutritious recipes from available ingredients, and connects users to free/low-income food resources nearby. Built by 3 Purdue freshmen (Aarav, Neil, Nuv) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
 
 ## Tech Stack
 - **Python** + **Streamlit** (pure Python frontend)
 - **Tesseract** via `pytesseract` + **OpenCV** for OCR
 - **Groq API** with Llama 3.3-70b-versatile + Llama 3.2-90b-vision-preview (free tier)
 - **USDA FoodData Central API** (free key from api.data.gov)
+- **Food resource locator API** (TBD — USDA Food Desert Atlas, FoodFinder, Feeding America, or 211.org; fallback: curated local list)
 - API keys in `.env` (gitignored), `.env.example` committed for teammates
 
 ## Project Structure
@@ -31,11 +32,15 @@ NutriScan/
 │   │   └── usda_client.py      # USDA API client
 │   ├── vision/
 │   │   └── food_identifier.py  # Groq Vision API food recognition
+│   ├── resources/
+│   │   └── locator.py          # Free food resource finder (food banks, pantries, etc.)
 │   └── ui/
 │       ├── components.py       # Reusable Streamlit widgets
 │       ├── pages_upload.py     # Image upload tab
 │       ├── pages_snap.py       # Snap Food photo tab
 │       ├── pages_manual.py     # Manual entry tab
+│       ├── pages_recipe.py     # Recipe Generator tab
+│       ├── pages_find.py       # Find Free Food Near You tab
 │       └── pages_results.py    # Results display
 ├── data/
 │   └── fda_daily_values.json   # FDA daily reference values
@@ -296,7 +301,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ---
 
 ### Phase 6 — Local Resource Finder `April 12 – April 14`
-> Goal: Analyze the user's diet for nutrient gaps, then recommend nearby affordable places to fill those gaps — grocery stores, farmers markets, food banks, community gardens. Completes the food insecurity story.
+> Goal: Analyze the user's diet for nutrient gaps, then connect them to free or low-income-accessible food resources nearby. Focus exclusively on places that serve food-insecure households — no regular grocery stores or paid services.
 
 - [ ] **6.1 Nutrient Gap Analysis**
   - [ ] 6.1.1 Compare user's scanned/entered foods against FDA daily values to identify deficiencies
@@ -304,20 +309,21 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 6.1.3 Map deficiencies to food categories (leafy greens, dairy, legumes, etc.)
 
 - [ ] **6.2 Local Resource Lookup**
-  - [ ] 6.2.1 Research free/affordable location APIs (Google Places, USDA Food Desert Atlas, FoodFinder API, or Feeding America locator)
-  - [ ] 6.2.2 Write `find_local_resources(zip_code, resource_type) -> list[dict]` — returns nearby places with name, address, distance, type
-  - [ ] 6.2.3 Resource types: grocery stores, farmers markets, food banks, community gardens, WIC/SNAP retailers
-  - [ ] 6.2.4 Fallback: curated list of West Lafayette / Lafayette community resources for video
+  - [ ] 6.2.1 Research free APIs for low-income food access (USDA Food Desert Atlas, FoodFinder API, Feeding America locator, 211.org)
+  - [ ] 6.2.2 Write `find_local_resources(zip_code, resource_type) -> list[dict]` — returns nearby free/low-cost places with name, address, hours, eligibility
+  - [ ] 6.2.3 Resource types: food banks, food pantries, community fridges, free community gardens, SNAP/WIC retailers, free meal programs, subsidized farmers markets
+  - [ ] 6.2.4 Filter out regular grocery stores and paid services — only free or income-qualified resources
+  - [ ] 6.2.5 Fallback: curated list of West Lafayette / Lafayette free food resources (food banks, Purdue food pantry, community gardens) for video
 
 - [ ] **6.3 LLM Recommendation Layer**
-  - [ ] 6.3.1 Write prompt: given nutrient gaps + nearby resources → personalized advice ("You're low on iron — the Lafayette Farmers Market on Main St has affordable leafy greens on Saturdays")
-  - [ ] 6.3.2 Include budget-conscious framing (seasonal produce, bulk staples, food bank hours)
+  - [ ] 6.3.1 Write prompt: given nutrient gaps + nearby free resources → personalized advice ("You're low on iron — the Lafayette Community Food Bank on Main St has free produce distributions on Saturdays")
+  - [ ] 6.3.2 Frame around free/low-cost access: food bank hours, SNAP-eligible stores, free meal schedules, community garden sign-ups
 
-- [ ] **6.4 UI — "Find Food Near You" Tab**
+- [ ] **6.4 UI — "Find Free Food Near You" Tab**
   - [ ] 6.4.1 Zip code / location input
   - [ ] 6.4.2 Display nutrient gap summary
-  - [ ] 6.4.3 Map or list of recommended local resources
-  - [ ] 6.4.4 Personalized LLM advice for each gap
+  - [ ] 6.4.3 List of free/low-cost food resources with hours, address, and eligibility info
+  - [ ] 6.4.4 Personalized LLM advice connecting nutrient gaps to specific free resources
 
 ---
 
@@ -347,7 +353,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [ ] **7.4 Presentation Slides**
   - [ ] 7.4.1 Problem statement — food insecurity + nutrition literacy gap
-  - [ ] 7.4.2 Solution overview — NutriScan's 4 features (label scan, food snap, recipe generator, local resources)
+  - [ ] 7.4.2 Solution overview — NutriScan's 5 features (label scan, food snap, manual entry, recipe generator, free local resources)
   - [ ] 7.4.3 Technical architecture slide (OCR, Groq LLM, USDA API, Vision)
   - [ ] 7.4.4 Evaluation results (OCR accuracy, LLM checklist scores)
   - [ ] 7.4.5 Embed or link video walkthrough
@@ -376,7 +382,8 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ---
 
 ## Verification Summary
-- **Unit tests:** OCR parsing, DV% math, prompt construction, response parsing (`pytest tests/`)
-- **Integration tests (manual):** Clear photo, blurry photo, food snap, allergen scenario, diet goal scenario, empty profile
-- **Evaluation:** OCR field accuracy on 5-10 images; LLM checklist on 5 test cases; vision food ID spot checks
-- **Demo smoke test:** Run all 5 demo scenarios morning of April 16
+- **Unit tests:** OCR parsing, DV% math, prompt construction, response parsing, recipe generation (`pytest tests/`)
+- **Integration tests (manual):** Clear photo, blurry photo, food snap, allergen scenario, diet goal scenario, empty profile, recipe from pantry, free resource lookup
+- **Evaluation:** OCR field accuracy on 5-10 images; LLM checklist on 5 test cases; vision food ID spot checks; recipe quality spot checks
+- **Video recording:** Run all 9 walkthrough scenarios (Phase 7.2) and screen record before April 16
+- **Pre-talk check:** Slides + video ready, app running as backup for Q&A
