@@ -168,22 +168,22 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [ ] 3.3.1.3 Write `check_preservatives(ingredients_list) -> list[str]` with hardcoded preservative list
     - [ ] 3.3.1.4 Cache results in `st.session_state`
 
-  - [ ] **3.3.2 Health Profile Form** (`src/ui/components.py`)
-    - [ ] 3.3.2.1 Write `health_profile_form()` for the sidebar (caloric target, allergens multiselect, dietary goals, restrictions)
-    - [ ] 3.3.2.2 Store profile in `st.session_state`, return `HealthProfile` object
+  - [x] **3.3.2 Health Profile Form** (`src/ui/components.py`)
+    - [x] 3.3.2.1 Write `health_profile_form()` for the sidebar (caloric target, allergens multiselect, dietary goals, restrictions)
+    - [x] 3.3.2.2 Store profile in `st.session_state`, return `HealthProfile` object
 
-  - [ ] **3.3.3 Nutrition Editor** (`src/ui/components.py`)
-    - [ ] 3.3.3.1 Write `nutrition_editor(nutrition_data)` — editable form pre-filled with OCR data
-    - [ ] 3.3.3.2 Each nutrient field is an `st.number_input`
-    - [ ] 3.3.3.3 Text area for ingredients list
-    - [ ] 3.3.3.4 Return corrected `NutritionData` on submit
+  - [x] **3.3.3 Nutrition Editor** (`src/ui/components.py`)
+    - [x] 3.3.3.1 Write `nutrition_editor(nutrition_data)` — editable form pre-filled with OCR data
+    - [x] 3.3.3.2 Each nutrient field is an `st.number_input`
+    - [x] 3.3.3.3 Text area for ingredients list
+    - [x] 3.3.3.4 Return corrected `NutritionData` on submit
 
-  - [ ] **3.3.4 Results Display** (`src/ui/pages_results.py`)
-    - [ ] 3.3.4.1 Write `results_display(result, dv_percentages)`
-    - [ ] 3.3.4.2 Colored flags: red for allergens/high risk, yellow for moderate, green for good
-    - [ ] 3.3.4.3 Bar chart of DV%
-    - [ ] 3.3.4.4 Recommendations as formatted text
-    - [ ] 3.3.4.5 Overall summary and risk level
+  - [x] **3.3.4 Results Display** (`src/ui/pages_results.py`)
+    - [x] 3.3.4.1 Write `results_display(result, dv_percentages)`
+    - [x] 3.3.4.2 Colored flags: red for allergens/high risk, yellow for moderate, green for good
+    - [x] 3.3.4.3 Bar chart of DV%
+    - [x] 3.3.4.4 Recommendations as formatted text
+    - [x] 3.3.4.5 Overall summary and risk level
 
   - [ ] **3.3.5 Upload Page** (`src/ui/pages_upload.py`)
     - [ ] 3.3.5.1 `st.file_uploader` accepting jpg/jpeg/png
