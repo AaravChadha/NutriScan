@@ -7,28 +7,33 @@ st.set_page_config(
 )
 
 st.title("NutriScan")
-st.subheader("AI-Powered Food Nutrition Label Analyzer")
+st.subheader("AI-Powered Nutrition Assistant")
 
-# Sidebar — health profile placeholder
-with st.sidebar:
-    st.header("Your Health Profile")
-    st.info("Health profile settings will appear here.")
+# Sidebar — health profile
+from src.ui.components import health_profile_form
+health_profile_form()
 
-# Main area — four tabs
-tab1, tab2, tab3, tab4 = st.tabs(
-    ["📷 Upload Label", "🍔 Snap Food", "✏️ Manual Entry", "🍳 Recipe Generator"]
+# Main area — five tabs
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    ["📷 Upload Label", "🍔 Snap Food", "✏️ Manual Entry", "🍳 Recipe Generator", "📍 Find Free Food"]
 )
 
 with tab1:
-    st.write("Upload a photo of a nutrition label to get started.")
+    from src.ui.pages_upload import render_upload_tab
+    render_upload_tab()
 
 with tab2:
-    st.write("Snap a photo of your food to identify it and get nutrition info.")
+    from src.ui.pages_snap import render_snap_tab
+    render_snap_tab()
 
 with tab3:
-    st.write("Manually enter nutrition information.")
+    from src.ui.pages_manual import render_manual_tab
+    render_manual_tab()
 
 with tab4:
     from src.ui.pages_recipe import render_recipe_tab
-
     render_recipe_tab()
+
+with tab5:
+    st.header("Find Free Food Near You")
+    st.info("Coming soon — Neil's local resource backend (Phase 6) will power this tab.")
