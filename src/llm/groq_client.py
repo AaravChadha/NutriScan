@@ -4,6 +4,7 @@ import json
 import os
 import time
 
+import streamlit as st
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -14,7 +15,12 @@ from src.nutrition.models import (
     NutritionData,
     PantryItem,
 )
-from src.llm.prompts import build_recipe_system_prompt, build_recipe_user_prompt
+from src.llm.prompts import (
+    build_analysis_system_prompt,
+    build_analysis_user_prompt,
+    build_recipe_system_prompt,
+    build_recipe_user_prompt,
+)
 
 load_dotenv()
 
@@ -51,6 +57,77 @@ class GroqClient:
                     continue
                 raise
         return ""
+
+    def analyze(
+        self,
+        nutrition_data: NutritionData,
+        health_profile: HealthProfile,
+        dv_percentages: dict,
+    ) -> AnalysisResult:
+        """Analyze a nutrition label for a specific user.
+
+        Returns an AnalysisResult with allergen/preservative/nutrient flags,
+        goal alignment, recommendations, overall risk, and a summary.
+        On API failure, surfaces a user-friendly error via st.error and
+        returns an empty AnalysisResult so the UI does not crash.
+        """
+        nutrition_dict = {
+            "calories": nutrition_data.calories,
+            "total_fat": nutrition_data.total_fat,
+            "saturated_fat": nutrition_data.saturated_fat,
+            "trans_fat": nutrition_data.trans_fat,
+            "cholesterol": nutrition_data.cholesterol,
+            "sodium": nutrition_data.sodium,
+            "total_carbs": nutrition_data.total_carbs,
+            "dietary_fiber": nutrition_data.dietary_fiber,
+            "total_sugars": nutrition_data.total_sugars,
+            "added_sugars": nutrition_data.added_sugars,
+            "protein": nutrition_data.protein,
+            "vitamin_d": nutrition_data.vitamin_d,
+            "calcium": nutrition_data.calcium,
+            "iron": nutrition_data.iron,
+            "potassium": nutrition_data.potassium,
+            "serving_size": nutrition_data.serving_size,
+            "servings_per_container": nutrition_data.servings_per_container,
+            "ingredients_list": nutrition_data.ingredients_list,
+        }
+
+        profile_dict = {
+            "caloric_target": health_profile.caloric_target,
+            "dietary_goals": health_profile.dietary_goals,
+            "allergens": health_profile.allergens,
+            "restrictions": health_profile.restrictions,
+        }
+
+        messages = [
+            {"role": "system", "content": build_analysis_system_prompt()},
+            {
+                "role": "user",
+                "content": build_analysis_user_prompt(
+                    nutrition_dict, dv_percentages, profile_dict
+                ),
+            },
+        ]
+
+        try:
+            raw = self._call_with_retry(messages, temperature=0.3)
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            st.error("The AI returned an invalid response. Please try again.")
+            return AnalysisResult()
+        except Exception as e:
+            st.error(f"Analysis failed: {e}")
+            return AnalysisResult()
+
+        return AnalysisResult(
+            allergen_flags=data.get("allergen_flags", []),
+            preservative_flags=data.get("preservative_flags", []),
+            nutrient_flags=data.get("nutrient_flags", []),
+            goal_alignment=data.get("goal_alignment", []),
+            recommendations=data.get("recommendations", []),
+            overall_risk=data.get("overall_risk", "unknown"),
+            summary=data.get("summary", ""),
+        )
 
     def generate_recipe(
         self,

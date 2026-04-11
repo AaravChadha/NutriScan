@@ -140,20 +140,20 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [ ] **3.2 LLM Integration (Track B — Aarav)**
 
-  - [ ] **3.2.1 Prompt Templates** (`src/llm/prompts.py`)
-    - [ ] 3.2.1.1 Write system prompt with JSON output schema (allergen detection, preservative flagging, sugar/nutrient flags, goal alignment, recommendations)
-    - [ ] 3.2.1.2 Define JSON response structure: `allergen_flags`, `preservative_flags`, `nutrient_flags`, `goal_alignment`, `recommendations`, `overall_risk`, `summary`
-    - [ ] 3.2.1.3 Write user prompt template that fills in nutrition data + DV% + ingredients + health profile
+  - [x] **3.2.1 Prompt Templates** (`src/llm/prompts.py`)
+    - [x] 3.2.1.1 Write system prompt with JSON output schema (allergen detection, preservative flagging, sugar/nutrient flags, goal alignment, recommendations)
+    - [x] 3.2.1.2 Define JSON response structure: `allergen_flags`, `preservative_flags`, `nutrient_flags`, `goal_alignment`, `recommendations`, `overall_risk`, `summary`
+    - [x] 3.2.1.3 Write user prompt template that fills in nutrition data + DV% + ingredients + health profile
 
-  - [ ] **3.2.2 Groq API Client** (`src/llm/groq_client.py`)
-    - [ ] 3.2.2.1 Load API key from environment variable via `python-dotenv`
-    - [ ] 3.2.2.2 Initialize Groq client
-    - [ ] 3.2.2.3 Write `analyze(nutrition_data, health_profile, dv_percentages) -> AnalysisResult`
-    - [ ] 3.2.2.4 Use `response_format={"type": "json_object"}` to force JSON output
-    - [ ] 3.2.2.5 Set `temperature=0.3` for factual consistency
-    - [ ] 3.2.2.6 Parse JSON response into `AnalysisResult` dataclass
-    - [ ] 3.2.2.7 Add try/except with retry on rate limit (30 RPM, 1K req/day)
-    - [ ] 3.2.2.8 Show user-friendly error via `st.error()` on failure
+  - [x] **3.2.2 Groq API Client** (`src/llm/groq_client.py`)
+    - [x] 3.2.2.1 Load API key from environment variable via `python-dotenv`
+    - [x] 3.2.2.2 Initialize Groq client
+    - [x] 3.2.2.3 Write `analyze(nutrition_data, health_profile, dv_percentages) -> AnalysisResult`
+    - [x] 3.2.2.4 Use `response_format={"type": "json_object"}` to force JSON output
+    - [x] 3.2.2.5 Set `temperature=0.3` for factual consistency
+    - [x] 3.2.2.6 Parse JSON response into `AnalysisResult` dataclass
+    - [x] 3.2.2.7 Add try/except with retry on rate limit (30 RPM, 1K req/day)
+    - [x] 3.2.2.8 Show user-friendly error via `st.error()` on failure
 
   - [ ] **3.2.3 LLM Testing**
     - [ ] 3.2.3.1 Write unit tests in `tests/test_llm.py` for prompt construction
