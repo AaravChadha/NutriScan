@@ -162,7 +162,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.2.3.2 Test response parsing with mock JSON → verify `AnalysisResult`
     - [x] 3.2.3.3 Manual test: call Groq API with sample data, inspect output
 
-- [ ] **3.3 USDA API + Streamlit UI (Track C — Nuv)**
+- [x] **3.3 USDA API + Streamlit UI (Track C — Nuv)**
 
   - [x] **3.3.1 USDA Client + Open Food Facts Fallback** (`src/nutrition/usda_client.py`, `src/nutrition/openfoodfacts_client.py`)
     - [x] 3.3.1.1 Register for free API key at api.data.gov
