@@ -374,31 +374,32 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 | Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 |--------|---------|---------|---------|---------|
-| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · 3.4 Vision (3.4.1-3.4.3, 3.4.5) pending | Integration lead — wires all tracks together | 5.2 LLM eval | — |
-| **Neil** | 3.1 OCR Pipeline (not started) | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
-| **Nuv** | ✅ 3.3 (all of Track C: USDA client, Health Profile, Nutrition Editor, Results Display, Upload, Manual, Snap UI, app.py tab wiring) | Integrates own UI track | — | 6.4 Find Free Food tab UI |
+| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup | Integration lead — wires all tracks together | 5.2 LLM eval | — |
+| **Neil** | 3.1 OCR Pipeline (not started — blocker for Upload Label flow) | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+| **Nuv** | ✅ 3.3 (all of Track C: USDA scaffold, Health Profile, Nutrition Editor, Results Display, Upload, Manual, Snap UI, app.py tab wiring) | Integrates own UI track | — | 6.4 Find Free Food tab UI |
 
 ### Completed Work Log (as of 2026-04-10)
 
-**Aarav**
+**Aarav** — Phase 3 complete (all assigned tracks done)
 - Phases 1-2: scaffolding, data models, FDA daily values, DV% computation
 - Phase 3.2: LLM Integration (prompts, `GroqClient.analyze()`, unit tests, manual Groq verification)
-- Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix (originally assigned to Nuv, pulled in to unblock)
-- Phase 3.3.5 / 3.3.6: stale fallback cleanup on Nuv's scaffold after 3.2 landed
+- Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix (originally assigned to Nuv, pulled in to unblock the Snap Food pipeline)
+- Phase 3.4: Food Photo Recognition — vision prompts, Groq vision client (`food_identifier.identify_food`, swapped decommissioned `llama-3.2-90b-vision-preview` → `meta-llama/llama-4-scout-17b-16e-instruct`), USDA/OFF bridge (`lookup_food_nutrition`, `aggregate_nutrition` with per-100g scaling and unit conversion), manual vision tests on 3 real meal photos (apple, sandwich platter, 8-item complex plate — all passed)
+- Phase 3.3.5 / 3.3.6 / 3.4.4: stale-fallback cleanup and bug fixes on Nuv's scaffolds after 3.2 and 3.4 landed (fixed incorrect `lookup_food_nutrition` and `aggregate_nutrition` call signatures in pages_snap)
 - Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, app.py wiring)
 
-**Nuv**
-- Phase 3.3.1 (initial): `search_food` + `check_preservatives` scaffold
+**Nuv** — Track C complete
+- Phase 3.3.1 (initial scaffold): `search_food` + `check_preservatives`
 - Phase 3.3.2: Health Profile sidebar form
-- Phase 3.3.3: Nutrition Editor widget
-- Phase 3.3.4: Results Display page
+- Phase 3.3.3: Nutrition Editor widget (shared across Upload / Manual / Snap / Recipe tabs)
+- Phase 3.3.4: Results Display page (colored flags, DV% bar chart, recommendations, risk summary)
 - Phase 3.3.5: Upload Label page scaffold
 - Phase 3.3.6: Manual Entry page scaffold
-- Phase 3.4.4: Snap Food page UI scaffold
+- Phase 3.4.4: Snap Food page UI scaffold (camera + upload, editable food table, pipeline wiring)
 - Wired up all five tabs in `app.py`
 
-**Neil**
-- Not yet started. 3.1 OCR pipeline is the critical blocker for the Upload Label flow.
+**Neil** — Not yet started
+- Phase 3.1 OCR pipeline is the critical blocker for the Upload Label end-to-end flow. Hard deadline: **April 12** for Phase 5.1 OCR evaluation metrics, **April 14** for video walkthrough scenarios 1/2/4. Minimum viable scope: OCR that works on 3-5 hand-picked demo labels, not a bulletproof pipeline.
 
 ---
 
