@@ -214,10 +214,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.4.2.3 Parse JSON response into list of identified food items
     - [x] 3.4.2.4 Add try/except with user-friendly error on failure
 
-  - [ ] **3.4.3 USDA Bridge** (`src/vision/food_identifier.py`)
-    - [ ] 3.4.3.1 Write `lookup_food_nutrition(food_name, grams, usda_client) -> NutritionData` — search USDA for the food, scale nutrition values to estimated portion
-    - [ ] 3.4.3.2 Write `aggregate_nutrition(food_items) -> NutritionData` — combine multiple foods into one `NutritionData` for analysis
-    - [ ] 3.4.3.3 Handle USDA miss gracefully — if food not found, flag it to the user
+  - [x] **3.4.3 USDA Bridge** (`src/vision/food_identifier.py`)
+    - [x] 3.4.3.1 Write `lookup_food_nutrition(food_name, grams, usda_client) -> NutritionData` — search USDA for the food, scale nutrition values to estimated portion
+    - [x] 3.4.3.2 Write `aggregate_nutrition(food_items) -> NutritionData` — combine multiple foods into one `NutritionData` for analysis
+    - [x] 3.4.3.3 Handle USDA miss gracefully — if food not found, flag it to the user
 
   - [ ] **3.4.4 Snap Food Page** (`src/ui/pages_snap.py`)
     - [ ] 3.4.4.1 `st.file_uploader` or `st.camera_input` for food photo

@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 from groq import Groq
 
 from src.llm.prompts import build_vision_system_prompt, build_vision_user_prompt
+from src.nutrition.models import NutritionData
+from src.nutrition.usda_client import lookup_food
 
 load_dotenv()
 
@@ -121,3 +123,222 @@ def identify_food(image_bytes: bytes) -> list[dict]:
             }
         )
     return cleaned
+
+
+# ── USDA Bridge ─────────────────────────────────────────────────────────────
+
+# USDA nutrient IDs → NutritionData field names. Values in foodNutrients are
+# per 100g for Foundation/SR Legacy/FNDDS and are computed per 100g from the
+# label for Branded, so per-100g is a safe assumption across dataTypes.
+_USDA_NUTRIENT_MAP = {
+    1008: "calories",        # Energy (kcal)
+    1003: "protein",         # Protein (g)
+    1004: "total_fat",       # Total lipid / fat (g)
+    1258: "saturated_fat",   # Saturated fat (g)
+    1257: "trans_fat",       # Trans fat (g)
+    1253: "cholesterol",     # Cholesterol (mg)
+    1093: "sodium",          # Sodium (mg)
+    1005: "total_carbs",     # Carbohydrate, by difference (g)
+    1079: "dietary_fiber",   # Fiber, total dietary (g)
+    2000: "total_sugars",    # Total sugars (g)
+    1235: "added_sugars",    # Added sugars (g)
+    1110: "vitamin_d",       # Vitamin D (mcg)
+    1087: "calcium",         # Calcium (mg)
+    1089: "iron",            # Iron (mg)
+    1092: "potassium",       # Potassium (mg)
+}
+
+# OFF stores mass nutrients in grams. NutritionData uses mg for most minerals
+# and mcg for vitamin D. These multipliers convert from per-100g-in-grams to
+# per-100g-in-target-unit.
+_OFF_PER100G_FIELDS = {
+    "calories": ("energy-kcal_100g", 1.0),
+    "total_fat": ("fat_100g", 1.0),
+    "saturated_fat": ("saturated-fat_100g", 1.0),
+    "trans_fat": ("trans-fat_100g", 1.0),
+    "cholesterol": ("cholesterol_100g", 1000.0),   # g → mg
+    "sodium": ("sodium_100g", 1000.0),             # g → mg
+    "total_carbs": ("carbohydrates_100g", 1.0),
+    "dietary_fiber": ("fiber_100g", 1.0),
+    "total_sugars": ("sugars_100g", 1.0),
+    "added_sugars": ("added-sugars_100g", 1.0),
+    "protein": ("proteins_100g", 1.0),
+    "vitamin_d": ("vitamin-d_100g", 1_000_000.0),  # g → mcg
+    "calcium": ("calcium_100g", 1000.0),           # g → mg
+    "iron": ("iron_100g", 1000.0),                 # g → mg
+    "potassium": ("potassium_100g", 1000.0),       # g → mg
+}
+
+
+def _usda_to_per_100g(food: dict) -> dict:
+    """Extract per-100g nutrient values from a USDA foods[0] entry."""
+    per_100g: dict = {}
+    for n in food.get("foodNutrients", []):
+        nid = n.get("nutrientId")
+        field = _USDA_NUTRIENT_MAP.get(nid)
+        if not field:
+            continue
+        try:
+            per_100g[field] = float(n.get("value", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+    return per_100g
+
+
+def _off_to_per_100g(product: dict) -> dict:
+    """Extract per-100g nutrient values from an OFF product entry."""
+    nutriments = product.get("nutriments", {}) or {}
+    per_100g: dict = {}
+    for field, (off_key, multiplier) in _OFF_PER100G_FIELDS.items():
+        raw = nutriments.get(off_key)
+        if raw is None:
+            continue
+        try:
+            per_100g[field] = float(raw) * multiplier
+        except (TypeError, ValueError):
+            continue
+    return per_100g
+
+
+def _scale(per_100g: dict, grams: float) -> NutritionData:
+    """Scale per-100g nutrient values to the requested portion size."""
+    factor = max(0.0, grams) / 100.0
+    return NutritionData(
+        calories=per_100g.get("calories", 0.0) * factor,
+        total_fat=per_100g.get("total_fat", 0.0) * factor,
+        saturated_fat=per_100g.get("saturated_fat", 0.0) * factor,
+        trans_fat=per_100g.get("trans_fat", 0.0) * factor,
+        cholesterol=per_100g.get("cholesterol", 0.0) * factor,
+        sodium=per_100g.get("sodium", 0.0) * factor,
+        total_carbs=per_100g.get("total_carbs", 0.0) * factor,
+        dietary_fiber=per_100g.get("dietary_fiber", 0.0) * factor,
+        total_sugars=per_100g.get("total_sugars", 0.0) * factor,
+        added_sugars=per_100g.get("added_sugars", 0.0) * factor,
+        protein=per_100g.get("protein", 0.0) * factor,
+        vitamin_d=per_100g.get("vitamin_d", 0.0) * factor,
+        calcium=per_100g.get("calcium", 0.0) * factor,
+        iron=per_100g.get("iron", 0.0) * factor,
+        potassium=per_100g.get("potassium", 0.0) * factor,
+        serving_size=f"{grams:.0f} g",
+        servings_per_container=1.0,
+    )
+
+
+def lookup_food_nutrition(
+    food_name: str, grams: float, api_key: str
+) -> NutritionData | None:
+    """Look up a food by name and scale its nutrition to the given portion.
+
+    Uses the USDA + Open Food Facts fallback chain from
+    `src.nutrition.usda_client.lookup_food`. Returns None if neither source
+    has a match (caller should flag this to the user).
+
+    Args:
+        food_name: Food name from vision output (e.g. "grilled chicken breast").
+        grams: Estimated portion size in grams.
+        api_key: USDA FoodData Central API key.
+
+    Returns:
+        NutritionData scaled to `grams`, or None on miss.
+    """
+    if not food_name or grams <= 0:
+        return None
+
+    result = lookup_food(food_name, api_key)
+    source = result.get("source")
+    data = result.get("data", {})
+
+    if source == "usda":
+        foods = data.get("foods", [])
+        if not foods:
+            return None
+        per_100g = _usda_to_per_100g(foods[0])
+    elif source == "off":
+        products = data.get("products", [])
+        if not products:
+            return None
+        per_100g = _off_to_per_100g(products[0])
+    else:
+        return None
+
+    if not per_100g:
+        return None
+    return _scale(per_100g, grams)
+
+
+def aggregate_nutrition(
+    food_items: list[dict], api_key: str
+) -> NutritionData:
+    """Combine multiple identified foods into a single NutritionData.
+
+    For each item in `food_items` (output of `identify_food`), looks up
+    nutrition via `lookup_food_nutrition` and sums the results. Missed
+    foods (not in USDA or OFF) are flagged via `st.warning` so the user
+    can correct the portion or name manually in the editor.
+
+    Args:
+        food_items: List of dicts with 'name' and 'estimated_grams' keys.
+        api_key: USDA FoodData Central API key.
+
+    Returns:
+        Aggregated NutritionData across all successfully-looked-up items.
+        If nothing could be looked up, returns an empty NutritionData.
+    """
+    if not food_items:
+        return NutritionData()
+
+    totals = {field: 0.0 for field in _USDA_NUTRIENT_MAP.values()}
+    found_names: list[str] = []
+    missed: list[str] = []
+
+    for item in food_items:
+        name = item.get("name", "")
+        grams = float(item.get("estimated_grams", 0) or 0)
+        nd = lookup_food_nutrition(name, grams, api_key)
+        if nd is None:
+            missed.append(name or "(unknown)")
+            continue
+        found_names.append(f"{name} ({grams:.0f}g)")
+        totals["calories"] += nd.calories
+        totals["total_fat"] += nd.total_fat
+        totals["saturated_fat"] += nd.saturated_fat
+        totals["trans_fat"] += nd.trans_fat
+        totals["cholesterol"] += nd.cholesterol
+        totals["sodium"] += nd.sodium
+        totals["total_carbs"] += nd.total_carbs
+        totals["dietary_fiber"] += nd.dietary_fiber
+        totals["total_sugars"] += nd.total_sugars
+        totals["added_sugars"] += nd.added_sugars
+        totals["protein"] += nd.protein
+        totals["vitamin_d"] += nd.vitamin_d
+        totals["calcium"] += nd.calcium
+        totals["iron"] += nd.iron
+        totals["potassium"] += nd.potassium
+
+    if missed:
+        st.warning(
+            "Could not find nutrition data for: "
+            + ", ".join(missed)
+            + ". Edit the values below to include them manually."
+        )
+
+    return NutritionData(
+        calories=totals["calories"],
+        total_fat=totals["total_fat"],
+        saturated_fat=totals["saturated_fat"],
+        trans_fat=totals["trans_fat"],
+        cholesterol=totals["cholesterol"],
+        sodium=totals["sodium"],
+        total_carbs=totals["total_carbs"],
+        dietary_fiber=totals["dietary_fiber"],
+        total_sugars=totals["total_sugars"],
+        added_sugars=totals["added_sugars"],
+        protein=totals["protein"],
+        vitamin_d=totals["vitamin_d"],
+        calcium=totals["calcium"],
+        iron=totals["iron"],
+        potassium=totals["potassium"],
+        serving_size="Full meal (sum of identified items)",
+        servings_per_container=1.0,
+        ingredients_list=", ".join(found_names),
+    )
