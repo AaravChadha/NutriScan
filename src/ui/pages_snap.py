@@ -1,12 +1,18 @@
 """Snap Food tab — photograph a meal, identify items, get nutrition & analysis."""
 
+import os
+
 import streamlit as st
+from dotenv import load_dotenv
 from PIL import Image
 
 from src.nutrition.fda_guidelines import compute_dv_percentages
 from src.nutrition.models import HealthProfile, NutritionData
 from src.ui.components import nutrition_editor
 from src.ui.pages_results import results_display
+from src.vision.food_identifier import aggregate_nutrition, identify_food
+
+load_dotenv()
 
 
 def _init_session_state():
@@ -22,59 +28,40 @@ def _init_session_state():
         st.session_state.snap_file_key = None
 
 
-def _identify_foods(image_bytes: bytes) -> list[dict]:
-    """Call vision model to identify food items. Returns list of {name, estimated_grams, confidence}."""
-    try:
-        from src.vision.food_identifier import identify_food
-        return identify_food(image_bytes)
-    except ImportError:
-        # Vision backend not built yet (Aarav's 3.4.1-3.4.3)
-        return []
+def _build_nutrition_from_foods(foods: list[dict]) -> NutritionData:
+    """Look up each food via USDA/OFF and aggregate into one NutritionData.
 
-
-def _build_nutrition_from_foods(foods: list[dict]) -> NutritionData | None:
-    """Look up each food in USDA and aggregate into one NutritionData."""
-    try:
-        from src.vision.food_identifier import aggregate_nutrition, lookup_food_nutrition
-        import os
-        api_key = os.getenv("USDA_API_KEY", "")
-        # Build a simple usda_client-compatible object for the bridge
-        from src.nutrition import usda_client
-        nutrition_items = []
-        for food in foods:
-            nd = lookup_food_nutrition(food["name"], food.get("estimated_grams", 100), usda_client)
-            if nd:
-                nutrition_items.append(nd)
-        if not nutrition_items:
-            return None
-        return aggregate_nutrition(nutrition_items)
-    except ImportError:
-        # Vision bridge not built yet (Aarav's 3.4.3)
-        return None
+    aggregate_nutrition emits an st.warning listing any foods that
+    couldn't be found, and returns an empty NutritionData when nothing
+    could be looked up (so the user still gets an editable form).
+    """
+    api_key = os.getenv("USDA_API_KEY", "")
+    return aggregate_nutrition(foods, api_key)
 
 
 def _run_analysis(nutrition_data: NutritionData) -> None:
-    """Compute DV% and call LLM analyze(). Stores results in session_state."""
+    """Compute DV% and call LLM analyze(). Stores results in session_state.
+
+    GroqClient.analyze() handles its own API/JSON errors via st.error and
+    returns an empty AnalysisResult on failure, so the only exceptions we
+    need to catch here are client construction failures (e.g. missing
+    GROQ_API_KEY).
+    """
     health_profile = st.session_state.get("health_profile", HealthProfile())
     dv = compute_dv_percentages(nutrition_data)
 
     try:
         from src.llm.groq_client import GroqClient
         client = GroqClient()
-        result = client.analyze(nutrition_data, health_profile, dv)
-        st.session_state.snap_result = result
+    except ValueError as e:
+        st.error(str(e))
         st.session_state.snap_dv = dv
-        st.rerun()
-    except AttributeError:
-        # analyze() not implemented yet (Aarav's 3.2)
-        st.warning(
-            "LLM analysis not available yet — waiting on Aarav's 3.2. "
-            "DV% breakdown is ready below."
-        )
-        st.session_state.snap_dv = dv
-        st.rerun()
-    except Exception as e:
-        st.error(f"Analysis failed: {e}")
+        return
+
+    result = client.analyze(nutrition_data, health_profile, dv)
+    st.session_state.snap_result = result
+    st.session_state.snap_dv = dv
+    st.rerun()
 
 
 def render_snap_tab():
@@ -116,16 +103,16 @@ def render_snap_tab():
                     st.session_state.snap_nutrition = None
                     st.session_state.snap_dv = {}
                     with st.spinner("Identifying food items..."):
-                        foods = _identify_foods(photo.getvalue())
-                        if foods:
-                            st.session_state.snap_identified_foods = foods
-                            st.rerun()
-                        else:
-                            st.info(
-                                "Vision model not ready yet (waiting on Aarav's 3.4). "
-                                "Add foods manually below."
-                            )
-                            st.session_state.snap_identified_foods = []
+                        foods = identify_food(photo.getvalue())
+                    if foods:
+                        st.session_state.snap_identified_foods = foods
+                        st.rerun()
+                    else:
+                        st.info(
+                            "No foods identified in this photo. "
+                            "Try a clearer image or add foods manually below."
+                        )
+                        st.session_state.snap_identified_foods = []
             else:
                 st.success(f"Identified {len(st.session_state.snap_identified_foods)} item(s).")
 
@@ -192,15 +179,9 @@ def render_snap_tab():
         if st.button("Get Nutrition & Analyze", type="primary", key="snap_analyze_btn"):
             with st.spinner("Looking up nutrition data..."):
                 aggregated = _build_nutrition_from_foods(updated_foods)
-                if aggregated is None:
-                    st.info(
-                        "USDA nutrition bridge not ready yet (waiting on Aarav's 3.4.3). "
-                        "You can still enter values manually in the form below."
-                    )
-                    aggregated = NutritionData()
-                st.session_state.snap_nutrition = aggregated
-                st.session_state.snap_result = None
-                st.rerun()
+            st.session_state.snap_nutrition = aggregated
+            st.session_state.snap_result = None
+            st.rerun()
 
     # ── Step 4: Review nutrition + analyze ───────────────────────────────────
     if st.session_state.snap_nutrition is not None:

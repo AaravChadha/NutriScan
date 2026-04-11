@@ -219,13 +219,13 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.4.3.2 Write `aggregate_nutrition(food_items) -> NutritionData` — combine multiple foods into one `NutritionData` for analysis
     - [x] 3.4.3.3 Handle USDA miss gracefully — if food not found, flag it to the user
 
-  - [ ] **3.4.4 Snap Food Page** (`src/ui/pages_snap.py`)
-    - [ ] 3.4.4.1 `st.file_uploader` or `st.camera_input` for food photo
-    - [ ] 3.4.4.2 Display uploaded photo
-    - [ ] 3.4.4.3 "Identify Food" button → call vision model → show identified items + portions
-    - [ ] 3.4.4.4 Show editable table of identified foods (user can correct names/portions)
-    - [ ] 3.4.4.5 "Get Nutrition & Analyze" button → USDA lookup → populate `nutrition_editor` → LLM analysis
-    - [ ] 3.4.4.6 Show disclaimer: "Portions are AI-estimated — adjust if needed for accuracy"
+  - [x] **3.4.4 Snap Food Page** (`src/ui/pages_snap.py`)
+    - [x] 3.4.4.1 `st.file_uploader` or `st.camera_input` for food photo
+    - [x] 3.4.4.2 Display uploaded photo
+    - [x] 3.4.4.3 "Identify Food" button → call vision model → show identified items + portions
+    - [x] 3.4.4.4 Show editable table of identified foods (user can correct names/portions)
+    - [x] 3.4.4.5 "Get Nutrition & Analyze" button → USDA lookup → populate `nutrition_editor` → LLM analysis
+    - [x] 3.4.4.6 Show disclaimer: "Portions are AI-estimated — adjust if needed for accuracy"
 
   - [ ] **3.4.5 Vision Testing**
     - [ ] 3.4.5.1 Manual test: photo of simple meal (e.g. apple, sandwich) → check identified items
