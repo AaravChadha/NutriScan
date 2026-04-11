@@ -374,9 +374,9 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 | Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 |--------|---------|---------|---------|---------|
-| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.1.3 real-image OCR validation + regex bugfixes (pulled in from Neil) | Integration lead — wires all tracks together | 5.2 LLM eval | — |
-| **Nuv** | ✅ 3.3 (all of Track C: USDA scaffold, Health Profile, Nutrition Editor, Results Display, Upload, Manual, Snap UI, app.py tab wiring) | Integrates own UI track | — | 6.4 Find Free Food tab UI |
-| **Neil** | ✅ 3.1.1 / 3.1.2 / 3.1.3.3 / 3.1.3.4 (preprocessor, extractor, hardcoded-string tests) — 3.1.3.1 / 3.1.3.2 real-image validation pulled in by Aarav | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+| **Aarav** | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | 5.2 LLM eval · 5.1 vision label reader eval | — |
+| **Nuv** | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | 6.4 Find Free Food tab UI |
+| **Neil** | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
 
 ### Completed Work Log (as of 2026-04-11)
 
