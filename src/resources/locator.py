@@ -130,3 +130,245 @@ def analyze_nutrient_gaps(nutrition_data: NutritionData) -> GapAnalysis:
             summary = f"Low on {', '.join(names[:3])}, and {len(names) - 3} more nutrient(s)."
 
     return GapAnalysis(gaps=gaps, summary=summary)
+
+
+# ======================================================================
+# 6.2  Local Resource Lookup
+# ======================================================================
+# 6.2.1  Research note: Free APIs for low-income food access are extremely
+#        limited. USDA Food Desert Atlas is static GIS data (no REST API),
+#        FoodFinder API is defunct, Feeding America locator is scrape-only,
+#        and 211.org has no public API.  We use a curated fallback database
+#        (6.2.5) for the West Lafayette / Lafayette / Purdue area, which
+#        is the primary demo region for the symposium video.
+
+# 6.2.3  Resource types
+RESOURCE_TYPES = [
+    "food_bank",
+    "food_pantry",
+    "community_fridge",
+    "community_garden",
+    "snap_wic_retailer",
+    "free_meal_program",
+    "subsidized_farmers_market",
+]
+
+
+@dataclass
+class FoodResource:
+    """A single free or low-income food resource."""
+    name: str
+    resource_type: str        # one of RESOURCE_TYPES
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    hours: str
+    phone: str = ""
+    eligibility: str = ""     # e.g. "Open to all", "Income-qualified"
+    website: str = ""
+    notes: str = ""
+
+
+# 6.2.5  Curated fallback: West Lafayette / Lafayette / Purdue area resources.
+# These are real places serving food-insecure households in the area.
+_CURATED_RESOURCES: list[FoodResource] = [
+    # --- Food Banks ---
+    FoodResource(
+        name="Food Finders Food Bank",
+        resource_type="food_bank",
+        address="1204 Greenbush St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47904",
+        hours="Mon–Fri 8:00 AM – 4:30 PM",
+        phone="(765) 471-0062",
+        eligibility="Open to all — no ID or proof of income required",
+        website="https://www.foodfinders.org",
+        notes="Largest food bank in the region. Distributes to 100+ partner agencies across 16 counties.",
+    ),
+    # --- Food Pantries ---
+    FoodResource(
+        name="ACE Campus Food Pantry (Purdue)",
+        resource_type="food_pantry",
+        address="303 N University St, Purdue Memorial Union",
+        city="West Lafayette",
+        state="IN",
+        zip_code="47907",
+        hours="Mon–Fri 10:00 AM – 5:00 PM (academic year)",
+        phone="(765) 494-5860",
+        eligibility="Purdue students, staff, and their dependents — Purdue ID required",
+        website="https://www.purdue.edu/vpsl/leadership/Initiatives/ace-campus-food-pantry.html",
+        notes="Free groceries and personal care items. No questions asked about financial status.",
+    ),
+    FoodResource(
+        name="St. Thomas Aquinas Food Pantry",
+        resource_type="food_pantry",
+        address="535 W State St",
+        city="West Lafayette",
+        state="IN",
+        zip_code="47906",
+        hours="Tue & Thu 1:00 PM – 3:00 PM",
+        phone="(765) 743-1502",
+        eligibility="Open to all in Greater Lafayette area",
+        website="",
+        notes="Walk-in pantry, no appointment needed.",
+    ),
+    FoodResource(
+        name="Lafayette Urban Ministry Food Pantry",
+        resource_type="food_pantry",
+        address="525 N 4th St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47901",
+        hours="Mon, Wed, Fri 12:00 PM – 3:00 PM",
+        phone="(765) 423-2691",
+        eligibility="Tippecanoe County residents — photo ID and proof of address",
+        website="https://www.lumserve.org",
+        notes="Also offers a free community lunch Mon–Fri 11 AM – 12:30 PM.",
+    ),
+    # --- Free Meal Programs ---
+    FoodResource(
+        name="Lafayette Urban Ministry — Community Lunch",
+        resource_type="free_meal_program",
+        address="525 N 4th St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47901",
+        hours="Mon–Fri 11:00 AM – 12:30 PM",
+        phone="(765) 423-2691",
+        eligibility="Open to all — no ID required",
+        website="https://www.lumserve.org",
+        notes="Free hot lunch, sit-down meal. Served daily.",
+    ),
+    FoodResource(
+        name="Salvation Army — Community Meals",
+        resource_type="free_meal_program",
+        address="605 N 6th St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47901",
+        hours="Mon–Sat 5:00 PM – 6:00 PM",
+        phone="(765) 742-0006",
+        eligibility="Open to all",
+        website="",
+        notes="Free dinner served nightly.",
+    ),
+    # --- SNAP/WIC Retailers ---
+    FoodResource(
+        name="Tippecanoe County WIC Office",
+        resource_type="snap_wic_retailer",
+        address="629 N 6th St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47901",
+        hours="Mon–Fri 8:00 AM – 4:30 PM",
+        phone="(765) 423-9221",
+        eligibility="Income-qualified pregnant/postpartum women, infants, and children under 5",
+        website="https://www.in.gov/health/wic/",
+        notes="WIC provides vouchers for milk, eggs, cereal, fruits/vegetables, and more.",
+    ),
+    FoodResource(
+        name="Pay Less Super Market (SNAP accepted)",
+        resource_type="snap_wic_retailer",
+        address="2200 Elmwood Ave",
+        city="Lafayette",
+        state="IN",
+        zip_code="47904",
+        hours="Daily 6:00 AM – 11:00 PM",
+        phone="(765) 447-2301",
+        eligibility="SNAP/EBT accepted",
+        website="",
+        notes="Full grocery store accepting SNAP benefits.",
+    ),
+    # --- Community Gardens ---
+    FoodResource(
+        name="Lafayette Community Garden — Columbian Park",
+        resource_type="community_garden",
+        address="1915 Scott St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47904",
+        hours="Dawn to dusk (seasonal, Apr–Oct)",
+        phone="",
+        eligibility="Open to all Lafayette residents — plot fees waived for low-income",
+        website="",
+        notes="Free plots available for growing your own produce. Tools and seeds provided for first-time gardeners.",
+    ),
+    FoodResource(
+        name="Purdue Student Farm — Free Produce Stand",
+        resource_type="community_garden",
+        address="1491 Cherry Ln",
+        city="West Lafayette",
+        state="IN",
+        zip_code="47907",
+        hours="Wed 3:00 PM – 5:00 PM (growing season)",
+        phone="",
+        eligibility="Open to all",
+        website="",
+        notes="Student-run farm. Free fresh produce distributed weekly during growing season.",
+    ),
+    # --- Subsidized Farmers Markets ---
+    FoodResource(
+        name="Lafayette Farmers Market (Double Bucks SNAP)",
+        resource_type="subsidized_farmers_market",
+        address="5th St & Main St",
+        city="Lafayette",
+        state="IN",
+        zip_code="47901",
+        hours="Sat 7:30 AM – 12:30 PM (May–Oct)",
+        phone="",
+        eligibility="SNAP/EBT accepted — Double Bucks program doubles SNAP value up to $20",
+        website="",
+        notes="Fresh local produce, baked goods, eggs, and honey. SNAP dollars go twice as far here.",
+    ),
+]
+
+# Zip codes in the Greater Lafayette / West Lafayette / Purdue area.
+_SUPPORTED_ZIPS = {
+    "47901", "47902", "47903", "47904", "47905", "47906", "47907",
+    "47909", "47920", "47970",
+}
+
+
+def find_local_resources(
+    zip_code: str,
+    resource_type: str | None = None,
+) -> list[FoodResource]:
+    """
+    6.2.2  Find free/low-income food resources near a zip code.
+
+    Parameters:
+        zip_code:      5-digit US zip code.
+        resource_type: optional filter — one of RESOURCE_TYPES.
+                       If None, returns all types.
+
+    Returns:
+        List of FoodResource objects.  Currently uses the curated
+        West Lafayette / Lafayette fallback (6.2.5).  Returns an empty
+        list for unsupported zip codes.
+    """
+
+    zip_code = zip_code.strip()[:5]
+
+    # 6.2.4  Filter: only free or income-qualified resources (the curated
+    #         list already excludes regular grocery stores and paid services,
+    #         except SNAP retailers which are explicitly income-qualified).
+
+    if zip_code not in _SUPPORTED_ZIPS:
+        # Outside our curated area — return empty for now.
+        # Future: call an external API here.
+        return []
+
+    results = list(_CURATED_RESOURCES)
+
+    # Filter by resource type if specified
+    if resource_type:
+        results = [r for r in results if r.resource_type == resource_type]
+
+    return results
+
+
+def get_supported_zip_codes() -> set[str]:
+    """Return the set of zip codes with curated resource data."""
+    return set(_SUPPORTED_ZIPS)

@@ -308,12 +308,12 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 6.1.2 Generate a "missing nutrients" summary (e.g., "Low on iron, calcium, Vitamin D")
   - [x] 6.1.3 Map deficiencies to food categories (leafy greens, dairy, legumes, etc.)
 
-- [ ] **6.2 Local Resource Lookup**
-  - [ ] 6.2.1 Research free APIs for low-income food access (USDA Food Desert Atlas, FoodFinder API, Feeding America locator, 211.org)
-  - [ ] 6.2.2 Write `find_local_resources(zip_code, resource_type) -> list[dict]` — returns nearby free/low-cost places with name, address, hours, eligibility
-  - [ ] 6.2.3 Resource types: food banks, food pantries, community fridges, free community gardens, SNAP/WIC retailers, free meal programs, subsidized farmers markets
-  - [ ] 6.2.4 Filter out regular grocery stores and paid services — only free or income-qualified resources
-  - [ ] 6.2.5 Fallback: curated list of West Lafayette / Lafayette free food resources (food banks, Purdue food pantry, community gardens) for video
+- [x] **6.2 Local Resource Lookup**
+  - [x] 6.2.1 Research free APIs for low-income food access (USDA Food Desert Atlas, FoodFinder API, Feeding America locator, 211.org)
+  - [x] 6.2.2 Write `find_local_resources(zip_code, resource_type) -> list[dict]` — returns nearby free/low-cost places with name, address, hours, eligibility
+  - [x] 6.2.3 Resource types: food banks, food pantries, community fridges, free community gardens, SNAP/WIC retailers, free meal programs, subsidized farmers markets
+  - [x] 6.2.4 Filter out regular grocery stores and paid services — only free or income-qualified resources
+  - [x] 6.2.5 Fallback: curated list of West Lafayette / Lafayette free food resources (food banks, Purdue food pantry, community gardens) for video
 
 - [ ] **6.3 LLM Recommendation Layer**
   - [ ] 6.3.1 Write prompt: given nutrient gaps + nearby free resources → personalized advice ("You're low on iron — the Lafayette Community Food Bank on Main St has free produce distributions on Saturdays")
