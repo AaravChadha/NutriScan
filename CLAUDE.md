@@ -203,10 +203,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - [ ] **3.4 Food Photo Recognition (Track D — Aarav)**
   > Upload a photo of actual food (not a label) → AI identifies items + portions → pulls nutrition data from USDA → feeds into existing analysis pipeline.
 
-  - [ ] **3.4.1 Vision Prompt** (`src/llm/prompts.py`)
-    - [ ] 3.4.1.1 Write vision system prompt that instructs the model to identify food items, estimate portions (in grams), and return structured JSON
-    - [ ] 3.4.1.2 Define JSON response structure: `foods` array with `name`, `estimated_grams`, `confidence` per item
-    - [ ] 3.4.1.3 Include instruction to be conservative on portions and flag uncertainty
+  - [x] **3.4.1 Vision Prompt** (`src/llm/prompts.py`)
+    - [x] 3.4.1.1 Write vision system prompt that instructs the model to identify food items, estimate portions (in grams), and return structured JSON
+    - [x] 3.4.1.2 Define JSON response structure: `foods` array with `name`, `estimated_grams`, `confidence` per item
+    - [x] 3.4.1.3 Include instruction to be conservative on portions and flag uncertainty
 
   - [ ] **3.4.2 Food Identifier** (`src/vision/food_identifier.py`)
     - [ ] 3.4.2.1 Write `identify_food(image_bytes) -> list[dict]` using Groq with `llama-3.2-90b-vision-preview`

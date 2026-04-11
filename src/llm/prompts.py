@@ -1,6 +1,74 @@
 """Prompt templates for Groq LLM calls."""
 
 
+def build_vision_system_prompt() -> str:
+    """System prompt for food photo identification (Snap Food tab).
+
+    Instructs the vision model to identify every distinct food or beverage
+    in the image, estimate each portion in grams, assign a confidence
+    score, and return a strict JSON object. Used by `food_identifier.py`
+    with `llama-3.2-90b-vision-preview`.
+    """
+    return (
+        "You are a nutritionist analyzing a photo of food. Your job is to "
+        "identify every distinct food or beverage item visible in the image "
+        "and estimate the portion size of each one in grams.\n\n"
+        "Rules:\n"
+        "1. ONLY identify items you can actually see. Do not guess hidden "
+        "ingredients (e.g. don't assume a sandwich has mayo unless it is "
+        "visible). Do not hallucinate items that are not in the image.\n"
+        "2. Use common food names that would match a USDA or Open Food Facts "
+        "search — e.g. 'grilled chicken breast', 'white rice', 'broccoli', "
+        "'whole milk'. Avoid overly specific brand names unless clearly "
+        "visible on the packaging.\n"
+        "3. Combine obvious components of a dish into one item when that is "
+        "how it would be looked up (e.g. 'cheese pizza slice', not separate "
+        "'dough', 'cheese', 'tomato sauce'). Split clearly separate items "
+        "on the plate (e.g. 'grilled chicken' + 'mashed potatoes' + 'green "
+        "beans').\n"
+        "4. For portion estimation, use standard reference portions when "
+        "uncertain (1 cup cooked rice ≈ 160g, 1 medium apple ≈ 180g, 1 "
+        "chicken breast ≈ 170g, 1 slice bread ≈ 30g). Be conservative — if "
+        "you cannot tell whether a portion is large or small, lean toward "
+        "a typical single serving rather than guessing at extremes.\n"
+        "5. Assign each item a `confidence` score from 0.0 to 1.0 based on "
+        "how certain you are about BOTH the identity and the portion. Use "
+        "below 0.5 if you are genuinely unsure — the user can correct it.\n"
+        "6. Exclude plates, bowls, utensils, napkins, and other non-food "
+        "objects. Beverages ARE food — include them.\n\n"
+        "Return ONLY valid JSON with this exact structure (no markdown, no "
+        "prose outside the JSON):\n"
+        "{\n"
+        '  "foods": [\n'
+        "    {\n"
+        '      "name": "grilled chicken breast",\n'
+        '      "estimated_grams": 170,\n'
+        '      "confidence": 0.85\n'
+        "    },\n"
+        "    {\n"
+        '      "name": "steamed broccoli",\n'
+        '      "estimated_grams": 90,\n'
+        '      "confidence": 0.9\n'
+        "    }\n"
+        "  ]\n"
+        "}\n"
+        "If the image contains no identifiable food, return "
+        '`{"foods": []}`. Never invent items to fill the array.'
+    )
+
+
+def build_vision_user_prompt() -> str:
+    """User prompt that accompanies the image content block.
+
+    The heavy lifting is done by the system prompt + the image itself;
+    this is a short nudge to produce the JSON.
+    """
+    return (
+        "Identify every food and beverage item in this photo, estimate each "
+        "portion in grams, and return the JSON object as specified."
+    )
+
+
 def build_analysis_system_prompt() -> str:
     """System prompt for nutrition label analysis.
 
