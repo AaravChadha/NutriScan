@@ -134,11 +134,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.1.2.5 Return parsed `NutritionData` object + raw OCR text (for debugging)
     - [x] 3.1.2.6 Add confidence indicator — count parsed fields out of ~15; warn if < 5
 
-  - [ ] **3.1.3 OCR Testing**
-    - [ ] 3.1.3.1 Collect 3-4 sample nutrition label photos
-    - [ ] 3.1.3.2 Print raw Tesseract output to understand actual text before writing regex
-    - [ ] 3.1.3.3 Write unit tests in `tests/test_ocr.py` with hardcoded strings
-    - [ ] 3.1.3.4 Test edge cases: missing fields, "8 g" vs "8g", decimal values
+  - [x] **3.1.3 OCR Testing**
+    - [x] 3.1.3.1 Collect 3-4 sample nutrition label photos
+    - [x] 3.1.3.2 Print raw Tesseract output to understand actual text before writing regex
+    - [x] 3.1.3.3 Write unit tests in `tests/test_ocr.py` with hardcoded strings
+    - [x] 3.1.3.4 Test edge cases: missing fields, "8 g" vs "8g", decimal values
 
 - [x] **3.2 LLM Integration (Track B — Aarav)**
 
