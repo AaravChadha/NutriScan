@@ -118,13 +118,13 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [ ] **3.1 OCR Pipeline (Track A — Neil)**
 
-  - [ ] **3.1.1 Image Preprocessing** (`src/ocr/preprocessor.py`)
-    - [ ] 3.1.1.1 Accept PIL Image or file path as input
-    - [ ] 3.1.1.2 Convert to grayscale
-    - [ ] 3.1.1.3 Resize if image is too small (< 300 DPI equivalent)
-    - [ ] 3.1.1.4 Apply adaptive thresholding (`cv2.adaptiveThreshold` with `ADAPTIVE_THRESH_GAUSSIAN_C`)
-    - [ ] 3.1.1.5 Apply Gaussian blur to reduce noise
-    - [ ] 3.1.1.6 Return processed image as numpy array
+  - [x] **3.1.1 Image Preprocessing** (`src/ocr/preprocessor.py`)
+    - [x] 3.1.1.1 Accept PIL Image or file path as input
+    - [x] 3.1.1.2 Convert to grayscale
+    - [x] 3.1.1.3 Resize if image is too small (< 300 DPI equivalent)
+    - [x] 3.1.1.4 Apply adaptive thresholding (`cv2.adaptiveThreshold` with `ADAPTIVE_THRESH_GAUSSIAN_C`)
+    - [x] 3.1.1.5 Apply Gaussian blur to reduce noise
+    - [x] 3.1.1.6 Return processed image as numpy array
 
   - [ ] **3.1.2 OCR Extraction** (`src/ocr/extractor.py`)
     - [ ] 3.1.2.1 Call `preprocessor.preprocess(image)` to get cleaned image
