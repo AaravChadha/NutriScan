@@ -380,29 +380,34 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ### Completed Work Log (as of 2026-04-11)
 
-**Aarav** — Phase 3 complete (all assigned tracks done)
+**Aarav**
 - Phases 1-2: scaffolding, data models, FDA daily values, DV% computation
 - Phase 3.2: LLM Integration (prompts, `GroqClient.analyze()`, unit tests, manual Groq verification)
-- Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix (originally assigned to Nuv, pulled in to unblock the Snap Food pipeline)
-- Phase 3.4: Food Photo Recognition — vision prompts, Groq vision client (`food_identifier.identify_food`, swapped decommissioned `llama-3.2-90b-vision-preview` → `meta-llama/llama-4-scout-17b-16e-instruct`), USDA/OFF bridge (`lookup_food_nutrition`, `aggregate_nutrition` with per-100g scaling and unit conversion), manual vision tests on 3 real meal photos (apple, sandwich platter, 8-item complex plate — all passed)
-- Phase 3.3.5 / 3.3.6 / 3.4.4: stale-fallback cleanup and bug fixes on Nuv's scaffolds after 3.2 and 3.4 landed (fixed incorrect `lookup_food_nutrition` and `aggregate_nutrition` call signatures in pages_snap)
+- Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix
+- Phase 3.4: Food Photo Recognition — vision prompts, Groq vision client (`food_identifier.identify_food`, swapped decommissioned `llama-3.2-90b-vision-preview` → `meta-llama/llama-4-scout-17b-16e-instruct`), USDA/OFF bridge (`lookup_food_nutrition`, `aggregate_nutrition` with per-100g scaling and unit conversion), manual vision tests on 3 real meal photos
+- Phase 3.3.5 / 3.3.6 / 3.4.4: fixed incorrect `lookup_food_nutrition` and `aggregate_nutrition` call signatures in `pages_snap`
 - Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, app.py wiring)
-- Phase 3.1.3 real-image validation (2026-04-11, pulled in from Neil): collected 4 public-domain nutrition labels from Wikimedia Commons (`fda_2014.jpg`, `agave_nectar.jpg`, `monster_energy.jpg`, `high_sat_fat.jpg`) into `tests/sample_labels/`, ran end-to-end pipeline to surface real Tesseract artifacts, fixed 3 regex bugs that the hardcoded-string tests missed — (1) `_parse_ingredients` `[A-Z]{5,}` header check was case-insensitive due to leaked `re.IGNORECASE` flag, truncating ingredient lists mid-parse → scoped via inline `(?i:...)` on the keyword alternatives only; (2) `iron` regex now accepts `[il1]ron` for Tesseract's Iron→lron misread; (3) added reversed-order `_SERVINGS_PER_CONTAINER_REVERSED_RE` for FDA 2014+ "8 servings per container" layout. Added `TestRealImageExtraction` class (16 integration tests, auto-skips if Tesseract unavailable). Test suite: 73/73 passing.
+- Phase 3.1.3 real-image validation: collected 4 public-domain nutrition labels from Wikimedia Commons into `tests/sample_labels/`, ran end-to-end pipeline to surface real Tesseract artifacts, fixed 3 regex bugs — (1) `_parse_ingredients` `[A-Z]{5,}` header check was case-insensitive due to leaked `re.IGNORECASE` flag → scoped via inline `(?i:...)` on keywords only; (2) `iron` regex accepts `[il1]ron` for Tesseract's Iron→lron misread; (3) added reversed-order `_SERVINGS_PER_CONTAINER_REVERSED_RE` for FDA 2014+ "8 servings per container" layout. Added `TestRealImageExtraction` class (16 integration tests)
+- Phase 4.1 pipeline wire-up: fixed broken `extract_nutrition` imports in `pages_upload.py` and `pages_recipe.py`; audited Manual Entry, Snap Food, and sidebar HealthProfile flows
+- Phase 4.3 error handling: surfaced low/medium OCR confidence as `st.warning`/`st.info` banners in Upload Label and Recipe label-scan paths; verified Groq/USDA/OFF failures degrade gracefully
+- Phase 4.2 UX flow verification: manually walked all four flows in browser — iPhone label upload → vision reader → editor → LLM analysis (sodium=320 matched ground truth); high-sodium manual entry flagged BHT/HFCS/65% DV sodium; Snap Food photo → vision → USDA → aggregated nutrition; sidebar health profile change → re-analysis flipped goal alignment to `low-sodium: CONFLICT`
+- Vision-based label reader (`src/vision/label_reader.py`): replaced Tesseract for Upload Label + Recipe "Add from Label" flows. Groq vision system/user prompts, base64 image encoding, strict NutritionData JSON schema with unit conversion and "<1g"→0.5 rules, Tesseract fallback chain. Added `.heic`/`.heif`/`.webp` to the file_uploader allow-list plus `pillow-heif` registration so iPhone photos open natively. Preprocessor improvements kept as fallback: EXIF orientation via `ImageOps.exif_transpose`, normalize width to 1600px, adaptive threshold block=25/C=2. Extractor cleanup heuristics (letter-to-digit OCR fixups, loose `incl\w*` / `[il1]ron` / `[m\s]*g?` patterns, optional trailing g, multi-group alternation for modern "Includes Xg Added Sugars") as safety net for the fallback path
+- 80/80 tests passing across the Phase 4 work
 
-**Nuv** — Track C complete
-- Phase 3.3.1 (initial scaffold): `search_food` + `check_preservatives`
+**Nuv**
+- Phase 3.3.1: `search_food` + `check_preservatives`
 - Phase 3.3.2: Health Profile sidebar form
 - Phase 3.3.3: Nutrition Editor widget (shared across Upload / Manual / Snap / Recipe tabs)
 - Phase 3.3.4: Results Display page (colored flags, DV% bar chart, recommendations, risk summary)
 - Phase 3.3.5: Upload Label page scaffold
 - Phase 3.3.6: Manual Entry page scaffold
-- Phase 3.4.4: Snap Food page UI scaffold (camera + upload, editable food table, pipeline wiring)
+- Phase 3.4.4: Snap Food page scaffold (camera + upload, editable food table, pipeline wiring)
 - Wired up all five tabs in `app.py`
 
-**Neil** — Phase 3.1 code scaffold done, real-image validation done by Aarav
-- Phase 3.1.1 (preprocessor), 3.1.2 (extractor + regex), and 3.1.3.3/3.1.3.4 (hardcoded-string tests) landed in commits `b0dceb0`, `428167c`, `0bf7992`.
-- Phase 3.1.3.1 / 3.1.3.2 (real-image validation) was checked off without photos actually being collected; Aarav pulled it in on 2026-04-11 to unblock Phase 5.1 OCR eval and video scenarios 1/2/4.
-- Still owned by Neil: Phase 5.1 OCR evaluation (hard deadline **April 12**) and Phase 6.1-6.3 Local Resources backend.
+**Neil**
+- Phase 3.1.1 preprocessor (`src/ocr/preprocessor.py`): PIL/path/numpy loader, grayscale, upscale, adaptive threshold, Gaussian blur
+- Phase 3.1.2 extractor (`src/ocr/extractor.py`): Tesseract invocation with `--psm 6`, per-nutrient regex patterns, ingredients parser, confidence indicator
+- Phase 3.1.3.3 / 3.1.3.4: hardcoded-string unit tests in `tests/test_ocr.py` covering clean / spaced / decimal / sparse / noisy label formats
 
 ---
 
