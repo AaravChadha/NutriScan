@@ -188,12 +188,12 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.3.4.4 Recommendations as formatted text
     - [x] 3.3.4.5 Overall summary and risk level
 
-  - [ ] **3.3.5 Upload Page** (`src/ui/pages_upload.py`)
-    - [ ] 3.3.5.1 `st.file_uploader` accepting jpg/jpeg/png
-    - [ ] 3.3.5.2 Display uploaded image
-    - [ ] 3.3.5.3 Run OCR on upload, show raw text in expander
-    - [ ] 3.3.5.4 Show parsed data in editable `nutrition_editor`
-    - [ ] 3.3.5.5 "Analyze" button triggers LLM analysis
+  - [x] **3.3.5 Upload Page** (`src/ui/pages_upload.py`)
+    - [x] 3.3.5.1 `st.file_uploader` accepting jpg/jpeg/png
+    - [x] 3.3.5.2 Display uploaded image
+    - [x] 3.3.5.3 Run OCR on upload, show raw text in expander
+    - [x] 3.3.5.4 Show parsed data in editable `nutrition_editor`
+    - [x] 3.3.5.5 "Analyze" button triggers LLM analysis
 
   - [ ] **3.3.6 Manual Entry Page** (`src/ui/pages_manual.py`)
     - [ ] 3.3.6.1 Render `nutrition_editor` with empty/zero defaults

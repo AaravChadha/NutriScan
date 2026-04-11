@@ -33,27 +33,28 @@ def _run_ocr(uploaded_file) -> tuple[NutritionData, str]:
 
 
 def _run_analysis(nutrition_data: NutritionData) -> None:
-    """Compute DV% and call LLM analyze(). Stores results in session_state."""
+    """Compute DV% and call LLM analyze(). Stores results in session_state.
+
+    GroqClient.analyze() handles its own API/JSON errors via st.error and
+    returns an empty AnalysisResult on failure, so the only exceptions we
+    need to catch here are client construction failures (e.g. missing
+    GROQ_API_KEY).
+    """
     health_profile = st.session_state.get("health_profile", HealthProfile())
     dv = compute_dv_percentages(nutrition_data)
 
     try:
         from src.llm.groq_client import GroqClient
         client = GroqClient()
-        result = client.analyze(nutrition_data, health_profile, dv)
-        st.session_state.upload_result = result
+    except ValueError as e:
+        st.error(str(e))
         st.session_state.upload_dv = dv
-        st.rerun()
-    except AttributeError:
-        # analyze() not implemented yet (Aarav's 3.2)
-        st.warning(
-            "LLM analysis not available yet — waiting on Aarav's 3.2. "
-            "DV% breakdown is ready below."
-        )
-        st.session_state.upload_dv = dv
-        st.rerun()
-    except Exception as e:
-        st.error(f"Analysis failed: {e}")
+        return
+
+    result = client.analyze(nutrition_data, health_profile, dv)
+    st.session_state.upload_result = result
+    st.session_state.upload_dv = dv
+    st.rerun()
 
 
 def render_upload_tab():
