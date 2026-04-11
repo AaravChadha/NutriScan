@@ -1,14 +1,16 @@
 # NutriScan Build Plan
 
 ## Context
-NutriScan is an AI-powered nutrition assistant that combats food insecurity through personalized dietary insights. It scans nutrition labels (OCR), identifies food from photos (vision AI), generates nutritious recipes from available ingredients, and connects users to free/low-income food resources nearby. Built by 3 Purdue freshmen (Aarav, Neil, Nuv) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
+NutriScan is an AI-powered nutrition assistant that combats food insecurity through personalized dietary insights. It reads nutrition labels (vision AI, with OCR as offline fallback), identifies food from photos (vision AI), generates nutritious recipes from available ingredients, and connects users to free/low-income food resources nearby. Built by 3 Purdue freshmen (Aarav, Neil, Nuv) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
 
 ## Tech Stack
 - **Python** + **Streamlit** (pure Python frontend)
-- **Tesseract** via `pytesseract` + **OpenCV** for OCR
-- **Groq API** with Llama 3.3-70b-versatile (text) + Llama 4 Scout `meta-llama/llama-4-scout-17b-16e-instruct` (vision — the original Llama 3.2 90B vision preview was decommissioned) (free tier)
+- **Groq Vision API** with Llama 4 Scout `meta-llama/llama-4-scout-17b-16e-instruct` — **primary** label reader and food photo identifier. Takes an image, returns structured JSON (nutrition fields / food items). Replaced the original Tesseract OCR path for Upload Label and Recipe "Add from Label" flows after Phase 4.2 testing showed OCR was unreliable on real iPhone photos.
+- **Tesseract** via `pytesseract` + **OpenCV** — offline **fallback** for the label reader when `GROQ_API_KEY` is missing or the vision API errors out. Kept intact so the app degrades gracefully, not used on the golden path.
+- **Groq Text API** with Llama 3.3-70b-versatile — LLM analysis of nutrition data + health profile → allergen/preservative/nutrient flags, goal alignment, recommendations (free tier)
 - **USDA FoodData Central API** (free key from api.data.gov) — primary source for raw/whole foods
 - **Open Food Facts API** (no key, no rate limits) — fallback for branded packaged products that USDA misses
+- **pillow-heif** — HEIC/HEIF support so iPhone photos open natively in the file uploader without client-side conversion
 - **Food resource locator API** (TBD — USDA Food Desert Atlas, FoodFinder, Feeding America, or 211.org; fallback: curated local list)
 - API keys in `.env` (gitignored), `.env.example` committed for teammates
 
@@ -21,19 +23,20 @@ NutriScan/
 ├── .env                        # actual keys (gitignored)
 ├── .gitignore
 ├── src/
-│   ├── ocr/
-│   │   ├── preprocessor.py     # OpenCV image preprocessing
+│   ├── ocr/                    # Fallback label reader (Phase 3.1)
+│   │   ├── preprocessor.py     # OpenCV image preprocessing (EXIF, normalize width, adaptive threshold)
 │   │   └── extractor.py        # Tesseract OCR + regex parsing
 │   ├── llm/
 │   │   ├── groq_client.py      # Groq API wrapper
-│   │   └── prompts.py          # Prompt templates
+│   │   └── prompts.py          # Prompt templates (analysis, recipe, food vision, label vision)
 │   ├── nutrition/
 │   │   ├── models.py           # Dataclasses
 │   │   ├── fda_guidelines.py   # DV% computation
 │   │   ├── usda_client.py      # USDA API client + lookup_food fallback wrapper
 │   │   └── openfoodfacts_client.py  # Open Food Facts API client (fallback)
-│   ├── vision/
-│   │   └── food_identifier.py  # Groq Vision API food recognition
+│   ├── vision/                 # Primary label + food readers (Phase 3.4, Phase 4.2)
+│   │   ├── food_identifier.py  # Groq vision → food items + USDA/OFF bridge
+│   │   └── label_reader.py     # Groq vision → NutritionData (replaces OCR on golden path)
 │   ├── resources/
 │   │   └── locator.py          # Free food resource finder (food banks, pantries, etc.)
 │   └── ui/
@@ -62,12 +65,13 @@ streamlit>=1.30.0
 opencv-python-headless>=4.8.0
 pytesseract>=0.3.10
 Pillow>=10.0.0
+pillow-heif>=0.13.0
 groq>=0.4.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 pytest>=7.4.0
 ```
-System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr` (Ubuntu)
+System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr` (Ubuntu) — only needed for the OCR fallback path; the primary vision-based label reader has no system dependencies.
 
 ---
 
@@ -116,7 +120,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 3 — Core Features — Parallel Tracks `April 2 – April 7`
 > Goal: Build the three independent subsystems. Aarav, Neil, and Nuv each take one track.
 
-- [x] **3.1 OCR Pipeline (Track A — Neil)**
+- [x] **3.1 OCR Pipeline (Track A — Neil)** — now the **offline fallback** for the label reader. The primary path is the Groq vision label reader added in Phase 4.2 ([src/vision/label_reader.py](src/vision/label_reader.py)); this OCR pipeline is only hit when `GROQ_API_KEY` is missing or the vision API errors out.
 
   - [x] **3.1.1 Image Preprocessing** (`src/ocr/preprocessor.py`)
     - [x] 3.1.1.1 Accept PIL Image or file path as input
@@ -350,7 +354,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - [ ] **7.4 Presentation Slides**
   - [ ] 7.4.1 Problem statement — food insecurity + nutrition literacy gap
   - [ ] 7.4.2 Solution overview — NutriScan's 5 features (label scan, food snap, manual entry, recipe generator, free local resources)
-  - [ ] 7.4.3 Technical architecture slide (OCR, Groq LLM, USDA API, Vision)
+  - [ ] 7.4.3 Technical architecture slide — Groq Vision (label reading + food photo identification), Groq LLM (analysis + recipe generation), USDA FoodData Central + Open Food Facts (nutrition lookups), Tesseract OCR as offline fallback
   - [ ] 7.4.4 Evaluation results (LLM checklist scores; vision-vs-OCR comparison if 7.6 is done)
   - [ ] 7.4.5 Embed or link video walkthrough
   - [ ] 7.4.6 Future work — expanded local resources, multi-language support, mobile app
