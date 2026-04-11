@@ -370,17 +370,35 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ---
 
-## Suggested Task Division (~33% each, build work only)
+## Task Division
 
 | Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 |--------|---------|---------|---------|---------|
-| **Aarav** | 3.2 LLM Integration + 3.4 Vision (minus Snap UI) + 3.5 Recipe (done) | Integration lead — wires all tracks together | 5.2 LLM eval | — |
-| **Neil** | 3.1 OCR Pipeline | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
-| **Nuv** | 3.3 USDA + Streamlit UI + 3.4.4 Snap Food Page UI | Integrates own UI track | — | 6.4 Find Food Near You tab UI |
+| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · 3.4 Vision (3.4.1-3.4.3, 3.4.5) pending | Integration lead — wires all tracks together | 5.2 LLM eval | — |
+| **Neil** | 3.1 OCR Pipeline (not started) | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+| **Nuv** | ✅ 3.3 (all of Track C: USDA client, Health Profile, Nutrition Editor, Results Display, Upload, Manual, Snap UI, app.py tab wiring) | Integrates own UI track | — | 6.4 Find Free Food tab UI |
 
-### Already Completed (Aarav)
-- Phases 1-2: Project scaffolding, data models, FDA guidelines
-- Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, wiring)
+### Completed Work Log (as of 2026-04-10)
+
+**Aarav**
+- Phases 1-2: scaffolding, data models, FDA daily values, DV% computation
+- Phase 3.2: LLM Integration (prompts, `GroqClient.analyze()`, unit tests, manual Groq verification)
+- Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix (originally assigned to Nuv, pulled in to unblock)
+- Phase 3.3.5 / 3.3.6: stale fallback cleanup on Nuv's scaffold after 3.2 landed
+- Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, app.py wiring)
+
+**Nuv**
+- Phase 3.3.1 (initial): `search_food` + `check_preservatives` scaffold
+- Phase 3.3.2: Health Profile sidebar form
+- Phase 3.3.3: Nutrition Editor widget
+- Phase 3.3.4: Results Display page
+- Phase 3.3.5: Upload Label page scaffold
+- Phase 3.3.6: Manual Entry page scaffold
+- Phase 3.4.4: Snap Food page UI scaffold
+- Wired up all five tabs in `app.py`
+
+**Neil**
+- Not yet started. 3.1 OCR pipeline is the critical blocker for the Upload Label flow.
 
 ---
 
