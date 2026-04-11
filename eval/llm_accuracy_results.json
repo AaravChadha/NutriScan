@@ -1,0 +1,301 @@
+[
+  {
+    "case_id": "1_clean_pass_oats",
+    "description": "Plain rolled oats, general health profile \u2014 baseline. LLM should return low risk, empty allergen/preservative lists, and a positive goal alignment.",
+    "analysis": {
+      "allergen_flags": [],
+      "preservative_flags": [],
+      "nutrient_flags": [
+        "dietary fiber: 14% DV per serving (notably high)",
+        "total carbs: 10% DV per serving (moderate)"
+      ],
+      "goal_alignment": [
+        "general health goal: SUPPORT \u2014 provides whole grain, fiber, and some essential minerals"
+      ],
+      "recommendations": [
+        "Pair with a source of protein and healthy fat for a balanced meal",
+        "Consider as a healthy snack option"
+      ],
+      "overall_risk": "low",
+      "summary": "This whole grain oat product is a healthy choice, providing a good amount of dietary fiber and some essential minerals with no major nutrient concerns."
+    },
+    "checks": [
+      {
+        "dimension": "risk",
+        "passed": true,
+        "detail": "overall_risk='low' \u2208 ['low']"
+      },
+      {
+        "dimension": "min_recs",
+        "passed": true,
+        "detail": "len(recommendations)=2 >= 1"
+      },
+      {
+        "dimension": "forbidden_allergen",
+        "passed": true,
+        "detail": "forbidden 'wheat' in allergen_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_allergen",
+        "passed": true,
+        "detail": "forbidden 'soy' in allergen_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_allergen",
+        "passed": true,
+        "detail": "forbidden 'dairy' in allergen_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_allergen",
+        "passed": true,
+        "detail": "forbidden 'egg' in allergen_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_preservative",
+        "passed": true,
+        "detail": "forbidden 'BHT' in preservative_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_preservative",
+        "passed": true,
+        "detail": "forbidden 'BHA' in preservative_flags \u2014 absent"
+      },
+      {
+        "dimension": "forbidden_preservative",
+        "passed": true,
+        "detail": "forbidden 'TBHQ' in preservative_flags \u2014 absent"
+      }
+    ],
+    "passed_count": 9,
+    "total_count": 9,
+    "error": null
+  },
+  {
+    "case_id": "2_allergen_peanut",
+    "description": "Peanut butter cup for a peanut-allergic user. Must flag peanut specifically and return high overall risk.",
+    "analysis": {
+      "allergen_flags": [
+        "peanut: listed in ingredients"
+      ],
+      "preservative_flags": [
+        "TBHQ: synthetic preservative"
+      ],
+      "nutrient_flags": [
+        "added sugars: 40% DV per serving (high)",
+        "saturated fat: 25% DV per serving (high)"
+      ],
+      "goal_alignment": [
+        "general health goal: CONFLICT \u2014 high added sugars and saturated fat content"
+      ],
+      "recommendations": [
+        "Choose a product with less added sugars",
+        "Limit to half a serving to reduce saturated fat intake"
+      ],
+      "overall_risk": "high",
+      "summary": "This product may pose a risk due to the presence of peanuts and high amounts of added sugars and saturated fat."
+    },
+    "checks": [
+      {
+        "dimension": "allergen",
+        "passed": true,
+        "detail": "expected 'peanut' in allergen_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "preservative",
+        "passed": true,
+        "detail": "expected 'TBHQ' in preservative_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "nutrient",
+        "passed": true,
+        "detail": "expected 'sugar' in nutrient_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "risk",
+        "passed": true,
+        "detail": "overall_risk='high' \u2208 ['high']"
+      },
+      {
+        "dimension": "min_recs",
+        "passed": true,
+        "detail": "len(recommendations)=2 >= 1"
+      }
+    ],
+    "passed_count": 5,
+    "total_count": 5,
+    "error": null
+  },
+  {
+    "case_id": "3_preservatives_chips",
+    "description": "Fried snack with BHT + BHA + TBHQ. No user allergens. Must flag preservatives and surface sodium/saturated fat.",
+    "analysis": {
+      "allergen_flags": [],
+      "preservative_flags": [
+        "BHT: synthetic antioxidant",
+        "BHA: synthetic antioxidant",
+        "TBHQ: synthetic antioxidant"
+      ],
+      "nutrient_flags": [
+        "dietary fiber: 4% DV per serving (low)",
+        "protein: 4% DV per serving (low)"
+      ],
+      "goal_alignment": [
+        "general health goal: SUPPORT \u2014 balanced macronutrient profile, but low in essential nutrients like fiber and protein"
+      ],
+      "recommendations": [
+        "Pair with a high-fiber side",
+        "Consider adding a protein source to the meal"
+      ],
+      "overall_risk": "low",
+      "summary": "This product is a relatively balanced snack, but low in essential nutrients like fiber and protein, and contains synthetic preservatives."
+    },
+    "checks": [
+      {
+        "dimension": "preservative",
+        "passed": true,
+        "detail": "expected 'BHT' in preservative_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "preservative",
+        "passed": true,
+        "detail": "expected 'BHA' in preservative_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "preservative",
+        "passed": true,
+        "detail": "expected 'TBHQ' in preservative_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "risk",
+        "passed": false,
+        "detail": "overall_risk='low' \u2209 ['high', 'moderate']"
+      },
+      {
+        "dimension": "min_recs",
+        "passed": true,
+        "detail": "len(recommendations)=2 >= 1"
+      }
+    ],
+    "passed_count": 4,
+    "total_count": 5,
+    "error": null
+  },
+  {
+    "case_id": "4_goal_conflict_low_sodium",
+    "description": "Instant ramen for a user with a low-sodium dietary goal. Must flag sodium as a nutrient concern AND as a goal CONFLICT.",
+    "analysis": {
+      "allergen_flags": [],
+      "preservative_flags": [
+        "monosodium glutamate: synthetic flavor enhancer",
+        "caramel color: artificial coloring"
+      ],
+      "nutrient_flags": [
+        "sodium: 79% DV per serving (very high)",
+        "saturated fat: 35% DV per serving (high)",
+        "dietary fiber: 7% DV per serving (low)"
+      ],
+      "goal_alignment": [
+        "low sodium goal: CONFLICT \u2014 79% DV sodium"
+      ],
+      "recommendations": [
+        "Limit to half a serving",
+        "Pair with a low-sodium side",
+        "Choose a lower-sodium alternative"
+      ],
+      "overall_risk": "high",
+      "summary": "This product is very high in sodium and saturated fat, and low in dietary fiber, making it a poor choice for a low-sodium diet."
+    },
+    "checks": [
+      {
+        "dimension": "nutrient",
+        "passed": true,
+        "detail": "expected 'sodium' in nutrient_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "goal",
+        "passed": true,
+        "detail": "expected CONFLICT entry mentioning 'sodium' \u2014 FOUND"
+      },
+      {
+        "dimension": "risk",
+        "passed": true,
+        "detail": "overall_risk='high' \u2208 ['high']"
+      },
+      {
+        "dimension": "min_recs",
+        "passed": true,
+        "detail": "len(recommendations)=3 >= 1"
+      }
+    ],
+    "passed_count": 4,
+    "total_count": 4,
+    "error": null
+  },
+  {
+    "case_id": "5_multi_issue_cereal",
+    "description": "Sugary chocolate-milk kids cereal for a lactose-intolerant user with a low-added-sugar goal. Expect cascading flags across allergen, preservative, nutrient, and goal-alignment dimensions.",
+    "analysis": {
+      "allergen_flags": [
+        "nonfat milk: listed in ingredients, potential issue for lactose intolerance"
+      ],
+      "preservative_flags": [
+        "BHT: synthetic antioxidant",
+        "Red 40: artificial coloring",
+        "Yellow 5: artificial coloring"
+      ],
+      "nutrient_flags": [
+        "added sugars: 34% DV per serving (high)"
+      ],
+      "goal_alignment": [
+        "low added sugar goal: CONFLICT \u2014 34% DV added sugars"
+      ],
+      "recommendations": [
+        "Limit to half a serving",
+        "Pair with a low-sugar side",
+        "Consider lactose-free alternative"
+      ],
+      "overall_risk": "moderate",
+      "summary": "This product is high in added sugars and may not be suitable for lactose intolerant individuals due to the presence of nonfat milk."
+    },
+    "checks": [
+      {
+        "dimension": "allergen",
+        "passed": true,
+        "detail": "expected 'milk' in allergen_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "preservative",
+        "passed": true,
+        "detail": "expected 'BHT' in preservative_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "nutrient",
+        "passed": true,
+        "detail": "expected 'added sugar' in nutrient_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "nutrient",
+        "passed": true,
+        "detail": "expected 'sugar' in nutrient_flags \u2014 FOUND"
+      },
+      {
+        "dimension": "goal",
+        "passed": true,
+        "detail": "expected CONFLICT entry mentioning 'sugar' \u2014 FOUND"
+      },
+      {
+        "dimension": "risk",
+        "passed": true,
+        "detail": "overall_risk='moderate' \u2208 ['high', 'moderate']"
+      },
+      {
+        "dimension": "min_recs",
+        "passed": true,
+        "detail": "len(recommendations)=3 >= 2"
+      }
+    ],
+    "passed_count": 7,
+    "total_count": 7,
+    "error": null
+  }
+]
