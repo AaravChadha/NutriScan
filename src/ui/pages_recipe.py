@@ -27,51 +27,64 @@ def _render_pantry_builder():
         st.subheader("Scan a Label")
         uploaded_label = st.file_uploader(
             "Upload nutrition label",
-            type=["jpg", "jpeg", "png"],
+            type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
             key="recipe_label_upload",
         )
         if uploaded_label and st.button("Add from Label", key="add_label"):
             try:
-                from PIL import Image
-                from src.ocr.extractor import extract
+                # Vision-first, Tesseract fallback — same strategy as the
+                # Upload Label tab. Groq vision handles phone photos much
+                # better than Tesseract + regex tuning.
+                from src.vision.label_reader import extract_label_with_vision
 
                 uploaded_label.seek(0)
-                image = Image.open(uploaded_label).convert("RGB")
-                result = extract(image)
+                image_bytes = uploaded_label.read()
                 uploaded_label.seek(0)
 
-                if result.confidence == "low":
-                    st.warning(
-                        f"Couldn't read this label clearly — only "
-                        f"{result.fields_parsed} field(s) detected. "
-                        "The item was added but nutrition data may be sparse."
-                    )
+                nutrition = None
+                vision_result = extract_label_with_vision(image_bytes)
+                if vision_result is not None and vision_result.fields_parsed > 0:
+                    nutrition = vision_result.nutrition
+                    if vision_result.confidence < 0.5:
+                        st.warning(
+                            f"AI vision couldn't read this label clearly "
+                            f"(only {vision_result.fields_parsed} field(s)). "
+                            "The item was added but values may be incomplete."
+                        )
+                else:
+                    # Fall back to Tesseract
+                    from PIL import Image
+                    from src.ocr.extractor import extract
 
-                # Use first non-empty line of OCR text as name, or fallback
-                name = "Scanned Item"
-                if result.raw_text:
-                    for line in result.raw_text.strip().split("\n"):
-                        line = line.strip()
-                        if line and len(line) > 2:
-                            name = line[:50]
-                            break
+                    uploaded_label.seek(0)
+                    image = Image.open(uploaded_label).convert("RGB")
+                    ocr_result = extract(image)
+                    uploaded_label.seek(0)
+                    nutrition = ocr_result.nutrition
+                    if ocr_result.confidence == "low":
+                        st.warning(
+                            f"Couldn't read this label clearly — only "
+                            f"{ocr_result.fields_parsed} field(s) detected. "
+                            "The item was added but nutrition data may be sparse."
+                        )
+
                 item = PantryItem(
-                    name=name,
+                    name="Scanned Item",
                     source="label_scan",
-                    nutrition=result.nutrition,
+                    nutrition=nutrition,
                     quantity="1 serving",
                 )
                 st.session_state.pantry_items.append(item)
                 st.success(f"Added: {item.name}")
                 st.rerun()
             except Exception as e:
-                st.error(f"OCR failed: {e}. Try manual entry instead.")
+                st.error(f"Label reading failed: {e}. Try manual entry instead.")
 
     with col_photo:
         st.subheader("Snap Food Items")
         food_photo = st.file_uploader(
             "Upload food photo",
-            type=["jpg", "jpeg", "png"],
+            type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
             key="recipe_food_upload",
         )
         if food_photo and st.button("Identify & Add", key="add_photo"):

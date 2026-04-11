@@ -44,34 +44,63 @@ class ExtractionResult:
 # Order matters for fields like "total fat" vs plain "fat" — more specific
 # patterns come first to avoid mis-matches.
 
+# Separator between nutrient name and value. Accepts whitespace, colon,
+# period, comma, or hyphen — handles real-world artifacts like
+# "Iron:0.3mg" (punchout label) or "Sodium, 160mg" (comma after name).
+_SEP = r"[\s:.,\-]*"
+
+# Value + optional "less than" prefix. Some labels say "Less than 1g" or
+# "<1g" for trace nutrients; capture the digit and ignore the prefix.
+# Also allow comma as decimal separator (Tesseract sometimes OCRs "." as ",").
+_VAL = r"(?:<|less\s*than\s*)?\s*(\d+[.,]?\d*)"
+
+# Unit suffix for mg/g with tolerance for double-letter OCR artifacts like
+# "Mmg" (should be "Mg") — accepts any mix of m/whitespace before the g.
+# Trailing g is optional because Tesseract frequently swallows it into the
+# next token (e.g. "Protein 20g" → "proteim:209"). Strong nutrient-name
+# context keeps false positives low.
+_MG = r"[m\s]*g?"
+_G = r"\s*g?"
+
 _NUTRIENT_PATTERNS: list[tuple[str, re.Pattern]] = [
     # --- fats ---------------------------------------------------------
-    ("trans_fat",      re.compile(r"trans\s*fat\s*(\d+\.?\d*)\s*g",  re.IGNORECASE)),
-    ("saturated_fat",  re.compile(r"saturated\s*fat\s*(\d+\.?\d*)\s*g",  re.IGNORECASE)),
-    ("total_fat",      re.compile(r"total\s*fat\s*(\d+\.?\d*)\s*g",  re.IGNORECASE)),
+    ("trans_fat",      re.compile(rf"trans\s*fat{_SEP}{_VAL}{_G}",  re.IGNORECASE)),
+    ("saturated_fat",  re.compile(rf"saturated\s*fat{_SEP}{_VAL}{_G}",  re.IGNORECASE)),
+    ("total_fat",      re.compile(rf"total\s*fat{_SEP}{_VAL}{_G}",  re.IGNORECASE)),
 
     # --- cholesterol & sodium -----------------------------------------
-    ("cholesterol",    re.compile(r"cholesterol\s*(\d+\.?\d*)\s*m?g", re.IGNORECASE)),
-    ("sodium",         re.compile(r"sodium\s*(\d+\.?\d*)\s*m?g",     re.IGNORECASE)),
+    ("cholesterol",    re.compile(rf"cholesterol{_SEP}{_VAL}\s*{_MG}", re.IGNORECASE)),
+    ("sodium",         re.compile(rf"sodium{_SEP}{_VAL}\s*{_MG}",     re.IGNORECASE)),
 
     # --- carbohydrates ------------------------------------------------
-    ("dietary_fiber",  re.compile(r"dietary\s*fiber\s*(\d+\.?\d*)\s*g",    re.IGNORECASE)),
-    ("total_sugars",   re.compile(r"total\s*sugars?\s*(\d+\.?\d*)\s*g",    re.IGNORECASE)),
-    ("added_sugars",   re.compile(r"(?:incl\.?\s*|added\s*)sugars?\s*(\d+\.?\d*)\s*g", re.IGNORECASE)),
-    ("total_carbs",    re.compile(r"total\s*carb(?:ohydrate)?s?\s*(\d+\.?\d*)\s*g",    re.IGNORECASE)),
+    ("dietary_fiber",  re.compile(rf"dietary\s*fiber{_SEP}{_VAL}{_G}",    re.IGNORECASE)),
+    ("total_sugars",   re.compile(rf"total\s*sugars?{_SEP}{_VAL}{_G}",    re.IGNORECASE)),
+    # Added sugars has two real-world orderings:
+    #   Classic: "Incl. Added Sugars 10g" / "Added Sugars 10g"
+    #   Modern FDA (2016+): "Includes 0g Added Sugars" — value BEFORE words
+    # OCR also often mangles "Includes" (e.g. "incldes") so match `incl\w*`.
+    ("added_sugars",   re.compile(
+        rf"incl\w*\s*{_VAL}\s*g?\s*added\s*sugars?"
+        rf"|(?:incl\.?\s*|added\s*)sugars?{_SEP}{_VAL}{_G}",
+        re.IGNORECASE,
+    )),
+    # "Total Carbohydrate" gets OCRed as "Carbohvdrate", "Carbohydnte",
+    # etc. Match "carb" followed by up to 15 lowercase letters, then value.
+    ("total_carbs",    re.compile(rf"total\s*carb[a-z]{{0,15}}{_SEP}{_VAL}{_G}",    re.IGNORECASE)),
 
     # --- protein ------------------------------------------------------
-    ("protein",        re.compile(r"protein\s*(\d+\.?\d*)\s*g",      re.IGNORECASE)),
+    # Tesseract sometimes misreads "Protein" as "Proteim" / "Protien" / etc.
+    ("protein",        re.compile(rf"prote[a-z]{{1,4}}{_SEP}{_VAL}{_G}",      re.IGNORECASE)),
 
     # --- calories -----------------------------------------------------
-    ("calories",       re.compile(r"calories\s*(\d+\.?\d*)",         re.IGNORECASE)),
+    ("calories",       re.compile(rf"calories{_SEP}{_VAL}",         re.IGNORECASE)),
 
     # --- micronutrients -----------------------------------------------
-    ("vitamin_d",      re.compile(r"vitamin\s*d\s*(\d+\.?\d*)\s*(?:mcg|µg|ug)", re.IGNORECASE)),
-    ("calcium",        re.compile(r"calcium\s*(\d+\.?\d*)\s*m?g",    re.IGNORECASE)),
+    ("vitamin_d",      re.compile(rf"vitamin\s*d{_SEP}{_VAL}\s*(?:mcg|µg|ug)", re.IGNORECASE)),
+    ("calcium",        re.compile(rf"calcium{_SEP}{_VAL}\s*{_MG}",    re.IGNORECASE)),
     # Tesseract often misreads "Iron" as "lron" (lowercase L) or "1ron" — accept all three.
-    ("iron",           re.compile(r"[il1]ron\s*(\d+\.?\d*)\s*m?g",    re.IGNORECASE)),
-    ("potassium",      re.compile(r"potassium\s*(\d+\.?\d*)\s*m?g",  re.IGNORECASE)),
+    ("iron",           re.compile(rf"[il1]ron{_SEP}{_VAL}\s*{_MG}",    re.IGNORECASE)),
+    ("potassium",      re.compile(rf"potassium{_SEP}{_VAL}\s*{_MG}",  re.IGNORECASE)),
 ]
 
 # Serving size & servings per container
@@ -140,22 +169,58 @@ def extract(image: Union[str, Path, Image.Image, np.ndarray]) -> ExtractionResul
 # Internal helpers
 # ======================================================================
 
+def _clean_ocr_text(text: str) -> str:
+    """
+    Heuristic fixups for common Tesseract artifacts on nutrition labels.
+
+    These target high-frequency OCR failures observed on real iPhone photos:
+    - Letter stuck to value: "Fatlg" → "Fat 1g", "Fatog" → "Fat 0g"
+      (Tesseract eats the space and reads "1" as "l" or "0" as "o" when
+      they're adjacent to letters.)
+    - Comma used as decimal point: "7,09g" → "7.09g" (handled in _VAL).
+    - Leading "S" instead of "5": "S20mg" → "520mg" only if immediately
+      followed by 2+ digits (to avoid mangling real words).
+    """
+    # "<letter>lg" / "<letter>Ig" / "<letter>og" → "<letter> 1g" / " 0g"
+    # Only triggers after a letter so we don't corrupt real words. We use
+    # lookahead for the "g" / "mg" so the \w-boundary issue goes away —
+    # "Fatlgsece" correctly becomes "Fat 1gsece" which then matches the
+    # total_fat regex via its value capture + tolerant trailing g.
+    text = re.sub(r"([A-Za-z])[lI](?=g)", r"\1 1", text)
+    text = re.sub(r"([A-Za-z])[oO](?=g)", r"\1 0", text)
+
+    # "S<digit><digit>mg" / "S<digit><digit>g" — leading 5 misread as S.
+    # Require at least 2 trailing digits so we don't mangle "Smg" or "Sugar".
+    text = re.sub(r"\bS(\d{2,})(\s*m?g\b)", r"5\1\2", text)
+
+    return text
+
+
 def _parse_nutrition(text: str) -> tuple[NutritionData, int]:
     """
     Apply regex patterns to OCR text and return a populated NutritionData
     plus the count of fields that were successfully extracted.
     """
 
+    # Clean up common OCR artifacts before running the regex patterns.
+    text = _clean_ocr_text(text)
+
     parsed: dict[str, float] = {}
 
     # --- 3.1.2.3  Nutrient regex matching ---
+    # Some patterns use alternation (e.g. added_sugars has two formats),
+    # which produces multiple capture groups where only one is populated
+    # per match. Pick the first non-None group.
     for field_name, pattern in _NUTRIENT_PATTERNS:
         match = pattern.search(text)
         if match:
-            try:
-                parsed[field_name] = float(match.group(1))
-            except (ValueError, IndexError):
-                pass
+            value_str = next((g for g in match.groups() if g is not None), None)
+            if value_str is not None:
+                try:
+                    # Replace comma-decimal ("7,09") with period before parsing
+                    parsed[field_name] = float(value_str.replace(",", "."))
+                except ValueError:
+                    pass
 
     fields_parsed = len(parsed)
 

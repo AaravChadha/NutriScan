@@ -272,7 +272,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 4.1.4 Ensure health profile sidebar feeds into all three flows
 
 - [ ] **4.2 UX Flow Verification**
-  - [ ] 4.2.1 Upload a clear photo → verify OCR extracts → edit → confirm → see results
+  - [x] 4.2.1 Upload a clear photo → verify OCR extracts → edit → confirm → see results
   - [ ] 4.2.2 Manual entry → fill form → see results
   - [ ] 4.2.3 Snap food photo → verify identified items → adjust → see results
   - [ ] 4.2.4 Change health profile → re-analyze → verify recommendations change

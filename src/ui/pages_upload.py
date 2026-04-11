@@ -20,38 +20,73 @@ def _init_session_state():
         st.session_state.upload_confidence = None
     if "upload_fields_parsed" not in st.session_state:
         st.session_state.upload_fields_parsed = 0
+    if "upload_source" not in st.session_state:
+        st.session_state.upload_source = "ocr"
     if "upload_result" not in st.session_state:
         st.session_state.upload_result = None
     if "upload_dv" not in st.session_state:
         st.session_state.upload_dv = {}
 
 
-def _run_ocr(uploaded_file) -> tuple[NutritionData, str, str, int]:
-    """Run OCR on the uploaded file.
+def _confidence_label(score: float) -> str:
+    """Map a 0.0-1.0 confidence score to our low/medium/high bucket."""
+    if score >= 0.75:
+        return "high"
+    if score >= 0.5:
+        return "medium"
+    return "low"
 
-    Returns (NutritionData, raw_text, confidence, fields_parsed). On any
-    failure (Tesseract missing, corrupted image, unreadable file) shows an
-    st.error and returns empty defaults so the UI can degrade gracefully.
+
+def _read_label(uploaded_file) -> tuple[NutritionData, str, str, int, str]:
+    """Read a nutrition label from the uploaded file.
+
+    Vision-first: tries Groq's vision model, which handles poor phone
+    photos much better than Tesseract + regex. Falls back to Tesseract if
+    GROQ_API_KEY is unset, the API fails, or the response can't be parsed.
+
+    Returns (NutritionData, raw_text, confidence, fields_parsed, source)
+    where `source` is 'vision' or 'ocr' so the UI can tell the user which
+    path was used.
     """
+    # --- Vision path ---
+    try:
+        from src.vision.label_reader import extract_label_with_vision
+
+        uploaded_file.seek(0)
+        image_bytes = uploaded_file.read()
+        uploaded_file.seek(0)
+
+        vision_result = extract_label_with_vision(image_bytes)
+        if vision_result is not None and vision_result.fields_parsed > 0:
+            return (
+                vision_result.nutrition,
+                vision_result.raw_json,
+                _confidence_label(vision_result.confidence),
+                vision_result.fields_parsed,
+                "vision",
+            )
+    except Exception as e:
+        # Don't surface — we still have the Tesseract fallback
+        st.info(f"Vision reader unavailable ({e}); falling back to OCR.")
+
+    # --- Tesseract fallback ---
     try:
         from src.ocr.extractor import extract
 
-        # Streamlit UploadedFile is a BytesIO-like wrapper — open via PIL and
-        # hand a real PIL Image to extract(). Seek back to 0 so the caller
-        # can still st.image() the same handle.
         uploaded_file.seek(0)
         image = Image.open(uploaded_file).convert("RGB")
-        result = extract(image)
+        ocr_result = extract(image)
         uploaded_file.seek(0)
         return (
-            result.nutrition,
-            result.raw_text,
-            result.confidence,
-            result.fields_parsed,
+            ocr_result.nutrition,
+            ocr_result.raw_text,
+            ocr_result.confidence,
+            ocr_result.fields_parsed,
+            "ocr",
         )
     except Exception as e:
-        st.error(f"OCR failed: {e}")
-        return NutritionData(), "", "low", 0
+        st.error(f"Label reading failed: {e}")
+        return NutritionData(), "", "low", 0, "ocr"
 
 
 def _run_analysis(nutrition_data: NutritionData) -> None:
@@ -88,7 +123,7 @@ def render_upload_tab():
 
     uploaded = st.file_uploader(
         "Choose a label image",
-        type=["jpg", "jpeg", "png"],
+        type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
         key="upload_label_file",
     )
 
@@ -99,26 +134,38 @@ def render_upload_tab():
             st.session_state.upload_file_key = file_key
             st.session_state.upload_result = None
             st.session_state.upload_dv = {}
-            with st.spinner("Scanning label..."):
-                nutrition, raw_text, confidence, fields_parsed = _run_ocr(uploaded)
+            with st.spinner("Reading label..."):
+                nutrition, raw_text, confidence, fields_parsed, source = _read_label(
+                    uploaded
+                )
                 st.session_state.upload_nutrition = nutrition
                 st.session_state.upload_raw_text = raw_text
                 st.session_state.upload_confidence = confidence
                 st.session_state.upload_fields_parsed = fields_parsed
+                st.session_state.upload_source = source
 
-        # 4.3.1 — surface low-confidence OCR to the user so they know to
+        # 4.3.1 — surface low-confidence reads to the user so they know to
         # either correct the values carefully or switch to Manual Entry.
+        source_label = (
+            "AI vision" if st.session_state.upload_source == "vision" else "OCR"
+        )
         if st.session_state.upload_confidence == "low":
             st.warning(
-                f"Couldn't read the label clearly — only "
+                f"{source_label}: couldn't read the label clearly — only "
                 f"{st.session_state.upload_fields_parsed} field(s) detected. "
                 "Please review the values below carefully, or switch to the "
                 "**Manual Entry** tab for a cleaner path."
             )
         elif st.session_state.upload_confidence == "medium":
             st.info(
-                f"Parsed {st.session_state.upload_fields_parsed} of ~15 fields. "
-                "Some values may be missing — review before analyzing."
+                f"{source_label}: parsed "
+                f"{st.session_state.upload_fields_parsed} of ~15 fields. "
+                "Review values before analyzing."
+            )
+        else:
+            st.success(
+                f"{source_label}: parsed "
+                f"{st.session_state.upload_fields_parsed} of ~15 fields cleanly."
             )
 
         col_img, col_ocr = st.columns([1, 1])
@@ -129,10 +176,15 @@ def render_upload_tab():
 
         with col_ocr:
             if st.session_state.upload_raw_text:
-                with st.expander("Raw OCR Text"):
+                label = (
+                    "Raw AI response (JSON)"
+                    if st.session_state.upload_source == "vision"
+                    else "Raw OCR text"
+                )
+                with st.expander(label):
                     st.text(st.session_state.upload_raw_text)
             else:
-                st.caption("Raw OCR text will appear here after scanning.")
+                st.caption("Extracted data will appear here after scanning.")
 
     if st.session_state.upload_nutrition is not None:
         st.divider()

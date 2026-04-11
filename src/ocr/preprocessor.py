@@ -2,20 +2,50 @@
 Image preprocessing for nutrition label OCR.
 
 Cleans up raw photos of nutrition labels to maximize Tesseract accuracy.
-Pipeline: load → grayscale → resize (if low-res) → adaptive threshold → Gaussian blur → return numpy array.
+
+Pipeline: load (honoring EXIF) → grayscale → resize to target range →
+denoise → adaptive threshold → return numpy array.
+
+The target-size step is critical for iPhone / Android photos. They're
+typically 3000-4000 px wide; feeding that directly into adaptive threshold
+with a small block size produces noise, because each block only covers a
+fraction of a text glyph. We downsample large images into a 1200-1600 px
+band where Tesseract's default PSM works well, and upscale small images
+up to 800 px so low-res scans aren't starved of pixels.
 """
 
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageOps
 from typing import Union
 from pathlib import Path
 
+# Register HEIC/HEIF opener with PIL so iPhone photos uploaded directly
+# from the camera roll (e.g. via st.file_uploader) can be opened without
+# a prior format conversion. No-op at runtime if Pillow already supports
+# the format or if pillow-heif isn't installed.
+try:
+    from pillow_heif import register_heif_opener
 
-# Minimum width in pixels before we upscale.  A typical nutrition label scanned
-# at 300 DPI is ~900-1200 px wide.  Below this threshold the text is likely too
-# small for reliable OCR.
-_MIN_WIDTH = 800
+    register_heif_opener()
+except ImportError:
+    pass
+
+
+# Normalize everything to a single target width. Upscale tiny scans with
+# INTER_CUBIC (adds detail), downsample big phone photos with INTER_AREA
+# (best for shrinking, avoids moiré). Chosen empirically: 1600 px is wide
+# enough to keep text legible on FDA-style clean scans (14/15 fields on
+# tests/sample_labels/fda_2014.jpg) AND normalizes 3000-4000 px iPhone
+# photos down to a size where the fixed-size adaptive threshold actually
+# lines up with character heights.
+_TARGET_WIDTH = 1600
+
+# Adaptive threshold block size — must be odd. Tuned for the target width:
+# too small and text strokes become noise, too large and shadows bleed
+# into glyphs. Block 25 / C=2 was the best sweep result for FDA 2014.
+_ADAPTIVE_BLOCK_SIZE = 25
+_ADAPTIVE_C = 2
 
 
 def preprocess(image: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
@@ -24,14 +54,14 @@ def preprocess(image: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
     cleaned grayscale numpy array ready for Tesseract OCR.
 
     Steps:
-        1. Load / convert to OpenCV BGR numpy array
+        1. Load / convert to OpenCV BGR numpy array (honoring EXIF rotation)
         2. Convert to grayscale
-        3. Resize if image width < _MIN_WIDTH (preserves aspect ratio)
-        4. Adaptive thresholding (Gaussian, block 11, C=2)
-        5. Gaussian blur (3×3) to reduce salt-and-pepper noise
+        3. Resize to _TARGET_WIDTH (upscales small scans, downsamples photos)
+        4. Adaptive thresholding (Gaussian, block 25, C=2)
+        5. Gaussian blur to reduce salt-and-pepper noise post-threshold
 
     Returns:
-        np.ndarray – single-channel (grayscale) preprocessed image.
+        np.ndarray – single-channel (binarized) preprocessed image.
     """
 
     # ------------------------------------------------------------------
@@ -45,9 +75,9 @@ def preprocess(image: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # ------------------------------------------------------------------
-    # 3.1.1.3  Resize if image is too small (< 300 DPI equivalent)
+    # 3.1.1.3  Normalize image width → _TARGET_WIDTH
     # ------------------------------------------------------------------
-    gray = _resize_if_small(gray)
+    gray = _normalize_width(gray)
 
     # ------------------------------------------------------------------
     # 3.1.1.4  Adaptive thresholding (ADAPTIVE_THRESH_GAUSSIAN_C)
@@ -57,8 +87,8 @@ def preprocess(image: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
         maxValue=255,
         adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         thresholdType=cv2.THRESH_BINARY,
-        blockSize=11,
-        C=2,
+        blockSize=_ADAPTIVE_BLOCK_SIZE,
+        C=_ADAPTIVE_C,
     )
 
     # ------------------------------------------------------------------
@@ -77,7 +107,13 @@ def preprocess(image: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
 # ======================================================================
 
 def _load_image(source: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray:
-    """Convert any supported input type to a BGR numpy array."""
+    """Convert any supported input type to a BGR numpy array.
+
+    For PIL Images and file paths we honor EXIF orientation tags via
+    ImageOps.exif_transpose — iPhone / Android photos are almost always
+    stored landscape-on-disk with a rotation tag, and feeding an unrotated
+    sideways image to Tesseract produces garbage OCR (Phase 4.2 bug).
+    """
 
     if isinstance(source, np.ndarray):
         # Already a numpy array — assume BGR (OpenCV convention)
@@ -87,25 +123,34 @@ def _load_image(source: Union[str, Path, Image.Image, np.ndarray]) -> np.ndarray
         return source
 
     if isinstance(source, Image.Image):
-        # PIL Image → numpy BGR
-        rgb = np.array(source.convert("RGB"))
+        pil_img = ImageOps.exif_transpose(source)
+        rgb = np.array(pil_img.convert("RGB"))
         return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
-    # str or Path → read from disk
+    # str or Path → read via PIL so we can honor EXIF orientation, then
+    # convert to BGR for OpenCV. (cv2.imread ignores EXIF tags entirely.)
     path = str(source)
-    img = cv2.imread(path, cv2.IMREAD_COLOR)
-    if img is None:
-        raise FileNotFoundError(f"Could not read image at '{path}'")
-    return img
+    try:
+        pil_img = Image.open(path)
+    except (FileNotFoundError, Image.UnidentifiedImageError) as e:
+        raise FileNotFoundError(f"Could not read image at '{path}'") from e
+    pil_img = ImageOps.exif_transpose(pil_img)
+    rgb = np.array(pil_img.convert("RGB"))
+    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
-def _resize_if_small(gray: np.ndarray) -> np.ndarray:
-    """Up-scale the image proportionally if its width is below _MIN_WIDTH."""
+def _normalize_width(gray: np.ndarray) -> np.ndarray:
+    """Scale the image so width = _TARGET_WIDTH, preserving aspect ratio.
 
+    Uses INTER_CUBIC when upscaling (adds detail) and INTER_AREA when
+    downsampling (best for shrinking, avoids moiré).
+    """
     h, w = gray.shape[:2]
-    if w < _MIN_WIDTH:
-        scale = _MIN_WIDTH / w
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        gray = cv2.resize(gray, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
-    return gray
+    if w == _TARGET_WIDTH:
+        return gray
+
+    scale = _TARGET_WIDTH / w
+    interp = cv2.INTER_AREA if w > _TARGET_WIDTH else cv2.INTER_CUBIC
+    return cv2.resize(
+        gray, (_TARGET_WIDTH, int(h * scale)), interpolation=interp
+    )

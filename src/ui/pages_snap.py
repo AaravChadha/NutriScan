@@ -79,7 +79,7 @@ def render_snap_tab():
     with col_upload:
         uploaded = st.file_uploader(
             "Upload a food photo",
-            type=["jpg", "jpeg", "png"],
+            type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
             key="snap_file_upload",
         )
     with col_cam:

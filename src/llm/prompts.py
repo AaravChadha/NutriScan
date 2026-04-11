@@ -69,6 +69,76 @@ def build_vision_user_prompt() -> str:
     )
 
 
+def build_label_vision_system_prompt() -> str:
+    """System prompt for nutrition label extraction via vision model.
+
+    Used by `src/vision/label_reader.py` to read a nutrition label photo
+    directly with Groq's vision model instead of Tesseract OCR. The model
+    returns every nutrient field as a structured JSON object matching
+    NutritionData — no per-field regex tuning required.
+    """
+    return (
+        "You are reading a nutrition facts label from a photo. Extract every "
+        "numeric value you can see and return them in a strict JSON object.\n\n"
+        "Rules:\n"
+        "1. Values are per serving, NOT per container. If the label shows "
+        "'per container' values in a second column, ignore them.\n"
+        "2. Convert every unit to the expected unit: grams (g) for macros, "
+        "milligrams (mg) for sodium / cholesterol / calcium / iron / "
+        "potassium, micrograms (mcg) for vitamin D. If the label shows mg "
+        "for vitamin D, convert (1 mg = 1000 mcg).\n"
+        "3. If a field is not printed on the label, return 0 for it — do "
+        "NOT guess or infer from typical values. A missing field is real.\n"
+        "4. 'Less than 1g' / '<1g' → return 0.5.\n"
+        "5. For serving size, return the printed text verbatim (e.g. "
+        "'2/3 cup (55g)', '1 piece (30g)', '240 mL').\n"
+        "6. For servings_per_container, return the number only (1.0 if the "
+        "label says 'single serving' or is not visible).\n"
+        "7. Ingredients: return the full ingredients list as a single comma-"
+        "separated string. Preserve parenthetical sub-ingredients. Stop at "
+        "'Contains:' / 'Allergen:' / 'Distributed by:' sections.\n"
+        "8. NEVER invent values. If you cannot read a field clearly, return "
+        "0 and lower your confidence score.\n"
+        "9. If the image does not contain a nutrition facts label at all "
+        '(e.g. it is just a product photo), return `{"confidence": 0.0}` '
+        "with all nutrient fields at 0.\n\n"
+        "Return ONLY valid JSON with this exact structure (no markdown, no "
+        "prose outside the JSON):\n"
+        "{\n"
+        '  "calories": 230,\n'
+        '  "total_fat": 8,\n'
+        '  "saturated_fat": 1,\n'
+        '  "trans_fat": 0,\n'
+        '  "cholesterol": 0,\n'
+        '  "sodium": 160,\n'
+        '  "total_carbs": 37,\n'
+        '  "dietary_fiber": 4,\n'
+        '  "total_sugars": 12,\n'
+        '  "added_sugars": 10,\n'
+        '  "protein": 3,\n'
+        '  "vitamin_d": 2,\n'
+        '  "calcium": 260,\n'
+        '  "iron": 8,\n'
+        '  "potassium": 235,\n'
+        '  "serving_size": "2/3 cup (55g)",\n'
+        '  "servings_per_container": 8,\n'
+        '  "ingredients_list": "Whole grain wheat, sugar, corn syrup, ...",\n'
+        '  "confidence": 0.9\n'
+        "}\n"
+        "All fields are required. confidence is a float in 0.0-1.0 based on "
+        "how clearly you could read the label."
+    )
+
+
+def build_label_vision_user_prompt() -> str:
+    """User prompt that accompanies the label image content block."""
+    return (
+        "Read this nutrition facts label. Extract every numeric value per "
+        "serving, plus serving size, servings per container, and the full "
+        "ingredients list. Return the JSON object as specified."
+    )
+
+
 def build_analysis_system_prompt() -> str:
     """System prompt for nutrition label analysis.
 
