@@ -334,6 +334,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 7.1.1 Clean up Streamlit styling (page title, icon, colors)
   - [ ] 7.1.2 Add brief app description/instructions on main page
   - [ ] 7.1.3 Final error handling pass — no tracebacks during video recording
+  - [ ] 7.1.4 Write `README.md` — project overview, features, tech stack, setup instructions (venv, `.env` keys, `streamlit run app.py`), screenshots or video link, credits to Aarav/Neil/Nuv + Dataception/Purdue. Do this as early as possible so the repo is presentable to judges/teammates ahead of polish.
 
 - [ ] **7.2 Video Walkthrough Scenarios**
   - [ ] 7.2.1 Scenario 1: Upload a clear label photo with no health concerns → basic analysis
@@ -375,15 +376,18 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 ## Task Division
 
-| Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
-|--------|---------|---------|---------|---------|
-| **Aarav** | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — |
-| **Nuv** | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | 6.4 Find Free Food tab UI |
-| **Neil** | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining shared work.
+
+| Person | Phase 1-2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 |
+|--------|-----------|---------|---------|---------|---------|---------|
+| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | Phase 7 shared |
+| **Nuv**   | — | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | ✅ 6.4 Find Free Food tab UI | Phase 7 shared |
+| **Neil**  | — | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | ✅ 6.1 Nutrient gap analysis · ✅ 6.2 Local resource lookup + curated Lafayette list · ✅ 6.3 LLM recommendation layer | Phase 7 shared |
 
 ### Completed Work Log (as of 2026-04-11)
 
 **Aarav**
+- Project planning: authored the full CLAUDE.md build plan (phases, subtasks, task division, tech-stack decisions, timelines)
 - Phases 1-2: scaffolding, data models, FDA daily values, DV% computation
 - Phase 3.2: LLM Integration (prompts, `GroqClient.analyze()`, unit tests, manual Groq verification)
 - Phase 3.3.1.5: Open Food Facts fallback client + USDA POST/X-Api-Key fix
@@ -407,20 +411,15 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - Phase 3.3.6: Manual Entry page scaffold
 - Phase 3.4.4: Snap Food page scaffold (camera + upload, editable food table, pipeline wiring)
 - Wired up all five tabs in `app.py`
+- Phase 6.4: Find Free Food Near You tab UI (`src/ui/pages_find.py`) — zip code input + resource-type filter, nutrient gap summary with colorized metrics (red <10%, yellow <25%), resource cards with address/hours/eligibility, "Get Personalized Advice" button calling `GroqClient.recommend_resources()`, session state for `find_resources` / `find_advice` / `find_zip`. Wired as 5th tab in `app.py`.
 
 **Neil**
 - Phase 3.1.1 preprocessor (`src/ocr/preprocessor.py`): PIL/path/numpy loader, grayscale, upscale, adaptive threshold, Gaussian blur
 - Phase 3.1.2 extractor (`src/ocr/extractor.py`): Tesseract invocation with `--psm 6`, per-nutrient regex patterns, ingredients parser, confidence indicator
 - Phase 3.1.3.3 / 3.1.3.4: hardcoded-string unit tests in `tests/test_ocr.py` covering clean / spaced / decimal / sparse / noisy label formats
-
-### Already Completed (Nuv)
-- 3.3.1: USDA client (`search_food`, `check_preservatives`, session_state caching)
-- 3.3.5: Upload Label page (file uploader, image display, OCR stub, nutrition editor, analyze flow)
-- 3.3.6: Manual Entry page (blank nutrition editor, analyze flow)
-- 3.4.4: Snap Food page UI (camera + file upload, identify button, editable food table, analyze flow)
-- 6.2.2–6.2.5: `find_local_resources()` + curated West Lafayette / Lafayette resource list (`src/resources/locator.py`)
-- 6.3: LLM resource recommendation layer (prompts + `GroqClient.recommend_resources()`)
-- 6.4: Find Free Food Near You tab UI (zip input, nutrient gap summary, resource cards, personalized LLM advice)
+- Phase 6.1 Nutrient Gap Analysis (`src/resources/locator.py`): `analyze_nutrient_gaps(nutrition_data) -> GapAnalysis` compares intake against FDA daily values at a 25% DV deficiency threshold, excludes "limit" nutrients (sodium, saturated fat), maps 13 nutrients to concrete food suggestions via `_NUTRIENT_FOOD_MAP` (leafy greens, legumes, fortified cereals, etc.)
+- Phase 6.2 Local Resource Lookup (`src/resources/locator.py`): `find_local_resources(zip_code, resource_type)` with 11 curated West Lafayette / Lafayette entries across all 7 resource types (food banks, pantries, free meal programs, SNAP/WIC retailers, community gardens, subsidized farmers markets). Zip range 47901–47920. No regular grocery stores in the list — only free or income-qualified resources.
+- Phase 6.3 LLM Recommendation Layer: `GroqClient.recommend_resources(nutrient_gaps, local_resources)` in `src/llm/groq_client.py` + system/user prompts in `src/llm/prompts.py`. Returns `{summary, tips}` connecting specific deficiencies to specific nearby resources (e.g. "low on iron → Food Bank X has free produce Saturdays"). Error-handled with `st.error()` fallbacks.
 
 ---
 
