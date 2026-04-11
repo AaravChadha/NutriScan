@@ -303,10 +303,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 6 — Local Resource Finder `April 12 – April 14`
 > Goal: Analyze the user's diet for nutrient gaps, then connect them to free or low-income-accessible food resources nearby. Focus exclusively on places that serve food-insecure households — no regular grocery stores or paid services.
 
-- [ ] **6.1 Nutrient Gap Analysis**
-  - [ ] 6.1.1 Compare user's scanned/entered foods against FDA daily values to identify deficiencies
-  - [ ] 6.1.2 Generate a "missing nutrients" summary (e.g., "Low on iron, calcium, Vitamin D")
-  - [ ] 6.1.3 Map deficiencies to food categories (leafy greens, dairy, legumes, etc.)
+- [x] **6.1 Nutrient Gap Analysis**
+  - [x] 6.1.1 Compare user's scanned/entered foods against FDA daily values to identify deficiencies
+  - [x] 6.1.2 Generate a "missing nutrients" summary (e.g., "Low on iron, calcium, Vitamin D")
+  - [x] 6.1.3 Map deficiencies to food categories (leafy greens, dairy, legumes, etc.)
 
 - [ ] **6.2 Local Resource Lookup**
   - [ ] 6.2.1 Research free APIs for low-income food access (USDA Food Desert Atlas, FoodFinder API, Feeding America locator, 211.org)
