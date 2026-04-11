@@ -330,3 +330,112 @@ def build_recipe_user_prompt(
         "Keep additional ingredients to common pantry staples (salt, pepper, oil, water). "
         "Focus on nutrition and simplicity."
     )
+
+
+# ======================================================================
+# 6.3  LLM Recommendation Layer — Resource Recommendations
+# ======================================================================
+
+def build_resource_recommendation_system_prompt() -> str:
+    """System prompt for personalized free-resource recommendations.
+
+    6.3.1 + 6.3.2  Given nutrient gaps and nearby free food resources,
+    generate actionable advice that connects specific deficiencies to
+    specific local resources where the user can get the food they need
+    for free or at low cost.
+    """
+    return (
+        "You are a compassionate community health navigator helping people "
+        "who may be food-insecure find free or low-cost food resources near "
+        "them. You will receive:\n"
+        "1. A list of NUTRIENT GAPS — nutrients the user is low on, with "
+        "the current %DV and food categories that can help fill each gap.\n"
+        "2. A list of LOCAL FREE FOOD RESOURCES — real places near the user "
+        "with names, addresses, hours, eligibility, and notes.\n\n"
+        "Your job:\n"
+        "1. For each nutrient gap, recommend 1-2 specific local resources "
+        "where the user is likely to find foods that address that gap. "
+        "Reference the resource BY NAME and include its hours and address.\n"
+        "2. Frame ALL advice around FREE or LOW-COST access: food bank "
+        "distributions, pantry visits, free meal programs, SNAP/WIC "
+        "benefits, community garden plots, and Double Bucks farmers "
+        "markets.\n"
+        "3. Be specific and actionable: 'Visit the ACE Campus Food Pantry "
+        "(303 N University St) Mon–Fri 10 AM – 5 PM for free canned beans "
+        "and fortified cereal to boost your iron and fiber.'\n"
+        "4. Include a brief GENERAL TIP section at the end with 2-3 "
+        "practical tips for eating nutritiously on a tight budget.\n"
+        "5. Be warm, non-judgmental, and encouraging. Never shame.\n\n"
+        "Return ONLY valid JSON with this exact structure (no markdown, "
+        "no prose outside the JSON):\n"
+        "{\n"
+        '  "personalized_recommendations": [\n'
+        "    {\n"
+        '      "nutrient": "iron",\n'
+        '      "advice": "You\'re low on iron. Visit the ACE Campus Food '
+        "Pantry (303 N University St, Mon–Fri 10 AM – 5 PM) for free "
+        'canned beans, lentils, and fortified cereal."\n'
+        "    }\n"
+        "  ],\n"
+        '  "general_tips": [\n'
+        '    "Buy dried beans in bulk — they\'re one of the cheapest '
+        'sources of protein and iron.",\n'
+        '    "Check if your local farmers market offers Double Bucks '
+        'for SNAP — your dollars go twice as far on fresh produce."\n'
+        "  ],\n"
+        '  "summary": "A warm 1-2 sentence summary of the overall advice."\n'
+        "}\n"
+        "All fields are required. Use empty arrays if nothing applies."
+    )
+
+
+def build_resource_recommendation_user_prompt(
+    nutrient_gaps: list[dict],
+    local_resources: list[dict],
+) -> str:
+    """Build the user prompt for resource recommendations.
+
+    Args:
+        nutrient_gaps: list of dicts with 'nutrient', 'current_pct_dv',
+            'label', and 'food_suggestions'.
+        local_resources: list of dicts with 'name', 'resource_type',
+            'address', 'city', 'hours', 'eligibility', 'notes'.
+    """
+
+    # -- Format nutrient gaps --
+    if nutrient_gaps:
+        gap_lines = []
+        for g in nutrient_gaps:
+            suggestions = ", ".join(g.get("food_suggestions", []))
+            gap_lines.append(
+                f"- {g['label']}  |  Foods that help: {suggestions}"
+            )
+        gaps_text = "\n".join(gap_lines)
+    else:
+        gaps_text = "No significant nutrient gaps detected."
+
+    # -- Format local resources --
+    if local_resources:
+        res_lines = []
+        for r in local_resources:
+            rtype = r.get("resource_type", "").replace("_", " ").title()
+            line = (
+                f"- {r['name']} ({rtype})\n"
+                f"  Address: {r['address']}, {r.get('city', '')}\n"
+                f"  Hours: {r.get('hours', 'N/A')}\n"
+                f"  Eligibility: {r.get('eligibility', 'Open to all')}"
+            )
+            if r.get("notes"):
+                line += f"\n  Notes: {r['notes']}"
+            res_lines.append(line)
+        resources_text = "\n".join(res_lines)
+    else:
+        resources_text = "No local resources found for this area."
+
+    return (
+        f"NUTRIENT GAPS\n{gaps_text}\n\n"
+        f"LOCAL FREE FOOD RESOURCES\n{resources_text}\n\n"
+        "Connect my nutrient gaps to specific local resources. "
+        "Be specific about which resource can help with which nutrient, "
+        "and include their hours and address. Return the JSON as specified."
+    )

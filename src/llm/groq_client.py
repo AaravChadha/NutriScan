@@ -20,6 +20,8 @@ from src.llm.prompts import (
     build_analysis_user_prompt,
     build_recipe_system_prompt,
     build_recipe_user_prompt,
+    build_resource_recommendation_system_prompt,
+    build_resource_recommendation_user_prompt,
 )
 
 load_dotenv()
@@ -178,3 +180,55 @@ class GroqClient:
             nutrition_highlights=data.get("nutrition_highlights", []),
             tips=data.get("tips", ""),
         )
+
+    def recommend_resources(
+        self,
+        nutrient_gaps: list[dict],
+        local_resources: list[dict],
+    ) -> dict:
+        """Generate personalized free-resource recommendations.
+
+        6.3.1 + 6.3.2  Uses the LLM to connect nutrient gaps to specific
+        local free food resources with actionable advice.
+
+        Args:
+            nutrient_gaps: list of dicts from NutrientGap dataclasses.
+            local_resources: list of dicts from FoodResource dataclasses.
+
+        Returns:
+            Dict with 'personalized_recommendations', 'general_tips',
+            and 'summary'.
+        """
+        messages = [
+            {"role": "system", "content": build_resource_recommendation_system_prompt()},
+            {
+                "role": "user",
+                "content": build_resource_recommendation_user_prompt(
+                    nutrient_gaps, local_resources
+                ),
+            },
+        ]
+
+        try:
+            raw = self._call_with_retry(messages, temperature=0.4)
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            st.error("The AI returned an invalid response. Please try again.")
+            return {
+                "personalized_recommendations": [],
+                "general_tips": [],
+                "summary": "Unable to generate recommendations at this time.",
+            }
+        except Exception as e:
+            st.error(f"Resource recommendation failed: {e}")
+            return {
+                "personalized_recommendations": [],
+                "general_tips": [],
+                "summary": "Unable to generate recommendations at this time.",
+            }
+
+        return {
+            "personalized_recommendations": data.get("personalized_recommendations", []),
+            "general_tips": data.get("general_tips", []),
+            "summary": data.get("summary", ""),
+        }

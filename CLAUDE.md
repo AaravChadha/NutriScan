@@ -315,9 +315,9 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 6.2.4 Filter out regular grocery stores and paid services — only free or income-qualified resources
   - [x] 6.2.5 Fallback: curated list of West Lafayette / Lafayette free food resources (food banks, Purdue food pantry, community gardens) for video
 
-- [ ] **6.3 LLM Recommendation Layer**
-  - [ ] 6.3.1 Write prompt: given nutrient gaps + nearby free resources → personalized advice ("You're low on iron — the Lafayette Community Food Bank on Main St has free produce distributions on Saturdays")
-  - [ ] 6.3.2 Frame around free/low-cost access: food bank hours, SNAP-eligible stores, free meal schedules, community garden sign-ups
+- [x] **6.3 LLM Recommendation Layer**
+  - [x] 6.3.1 Write prompt: given nutrient gaps + nearby free resources → personalized advice ("You're low on iron — the Lafayette Community Food Bank on Main St has free produce distributions on Saturdays")
+  - [x] 6.3.2 Frame around free/low-cost access: food bank hours, SNAP-eligible stores, free meal schedules, community garden sign-ups
 
 - [ ] **6.4 UI — "Find Free Food Near You" Tab**
   - [ ] 6.4.1 Zip code / location input
