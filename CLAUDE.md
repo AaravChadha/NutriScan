@@ -7,7 +7,8 @@ NutriScan is an AI-powered nutrition assistant that combats food insecurity thro
 - **Python** + **Streamlit** (pure Python frontend)
 - **Tesseract** via `pytesseract` + **OpenCV** for OCR
 - **Groq API** with Llama 3.3-70b-versatile + Llama 3.2-90b-vision-preview (free tier)
-- **USDA FoodData Central API** (free key from api.data.gov)
+- **USDA FoodData Central API** (free key from api.data.gov) — primary source for raw/whole foods
+- **Open Food Facts API** (no key, no rate limits) — fallback for branded packaged products that USDA misses
 - **Food resource locator API** (TBD — USDA Food Desert Atlas, FoodFinder, Feeding America, or 211.org; fallback: curated local list)
 - API keys in `.env` (gitignored), `.env.example` committed for teammates
 
@@ -29,7 +30,8 @@ NutriScan/
 │   ├── nutrition/
 │   │   ├── models.py           # Dataclasses
 │   │   ├── fda_guidelines.py   # DV% computation
-│   │   └── usda_client.py      # USDA API client
+│   │   ├── usda_client.py      # USDA API client + lookup_food fallback wrapper
+│   │   └── openfoodfacts_client.py  # Open Food Facts API client (fallback)
 │   ├── vision/
 │   │   └── food_identifier.py  # Groq Vision API food recognition
 │   ├── resources/
@@ -138,7 +140,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [ ] 3.1.3.3 Write unit tests in `tests/test_ocr.py` with hardcoded strings
     - [ ] 3.1.3.4 Test edge cases: missing fields, "8 g" vs "8g", decimal values
 
-- [ ] **3.2 LLM Integration (Track B — Aarav)**
+- [x] **3.2 LLM Integration (Track B — Aarav)**
 
   - [x] **3.2.1 Prompt Templates** (`src/llm/prompts.py`)
     - [x] 3.2.1.1 Write system prompt with JSON output schema (allergen detection, preservative flagging, sugar/nutrient flags, goal alignment, recommendations)
@@ -162,11 +164,12 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [ ] **3.3 USDA API + Streamlit UI (Track C — Nuv)**
 
-  - [ ] **3.3.1 USDA Client** (`src/nutrition/usda_client.py`)
+  - [ ] **3.3.1 USDA Client + Open Food Facts Fallback** (`src/nutrition/usda_client.py`, `src/nutrition/openfoodfacts_client.py`)
     - [ ] 3.3.1.1 Register for free API key at api.data.gov
     - [ ] 3.3.1.2 Write `search_food(query, api_key) -> dict` calling `/fdc/v1/foods/search`
     - [ ] 3.3.1.3 Write `check_preservatives(ingredients_list) -> list[str]` with hardcoded preservative list
     - [ ] 3.3.1.4 Cache results in `st.session_state`
+    - [x] 3.3.1.5 Write Open Food Facts client (`openfoodfacts_client.py`) + `lookup_food(query, api_key)` wrapper that tries USDA first, falls back to Open Food Facts on miss (covers branded/packaged products USDA doesn't index well)
 
   - [x] **3.3.2 Health Profile Form** (`src/ui/components.py`)
     - [x] 3.3.2.1 Write `health_profile_form()` for the sidebar (caloric target, allergens multiselect, dietary goals, restrictions)
