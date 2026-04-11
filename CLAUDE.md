@@ -195,10 +195,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.3.5.4 Show parsed data in editable `nutrition_editor`
     - [x] 3.3.5.5 "Analyze" button triggers LLM analysis
 
-  - [ ] **3.3.6 Manual Entry Page** (`src/ui/pages_manual.py`)
-    - [ ] 3.3.6.1 Render `nutrition_editor` with empty/zero defaults
-    - [ ] 3.3.6.2 Include text area for ingredients list
-    - [ ] 3.3.6.3 "Analyze" button triggers LLM analysis
+  - [x] **3.3.6 Manual Entry Page** (`src/ui/pages_manual.py`)
+    - [x] 3.3.6.1 Render `nutrition_editor` with empty/zero defaults
+    - [x] 3.3.6.2 Include text area for ingredients list
+    - [x] 3.3.6.3 "Analyze" button triggers LLM analysis
 
 - [ ] **3.4 Food Photo Recognition (Track D — Aarav)**
   > Upload a photo of actual food (not a label) → AI identifies items + portions → pulls nutrition data from USDA → feeds into existing analysis pipeline.
