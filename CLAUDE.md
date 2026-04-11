@@ -155,10 +155,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.2.2.7 Add try/except with retry on rate limit (30 RPM, 1K req/day)
     - [x] 3.2.2.8 Show user-friendly error via `st.error()` on failure
 
-  - [ ] **3.2.3 LLM Testing**
-    - [ ] 3.2.3.1 Write unit tests in `tests/test_llm.py` for prompt construction
-    - [ ] 3.2.3.2 Test response parsing with mock JSON → verify `AnalysisResult`
-    - [ ] 3.2.3.3 Manual test: call Groq API with sample data, inspect output
+  - [x] **3.2.3 LLM Testing**
+    - [x] 3.2.3.1 Write unit tests in `tests/test_llm.py` for prompt construction
+    - [x] 3.2.3.2 Test response parsing with mock JSON → verify `AnalysisResult`
+    - [x] 3.2.3.3 Manual test: call Groq API with sample data, inspect output
 
 - [ ] **3.3 USDA API + Streamlit UI (Track C — Nuv)**
 
