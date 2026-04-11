@@ -293,7 +293,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 > Goal: Get concrete accuracy numbers for the presentation.
 
 - [ ] **5.1 LLM Evaluation**
-  - [ ] 5.1.1 Create 5 test cases (nutrition label + health profile combos)
+  - [x] 5.1.1 Create 5 test cases (nutrition label + health profile combos)
   - [ ] 5.1.2 Run each through the LLM pipeline
   - [ ] 5.1.3 Score pass/fail: allergen detection, nutrient flagging, preservative ID, recommendation relevance
   - [ ] 5.1.4 Record results for poster/presentation
