@@ -265,11 +265,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 4 — Integration `April 7 – April 9`
 > Goal: Wire the three tracks together into one working app.
 
-- [ ] **4.1 Wire Up the Pipeline**
-  - [ ] 4.1.1 Connect upload page → OCR pipeline → editable form → LLM analysis → results display
-  - [ ] 4.1.2 Connect manual entry page → LLM analysis → results display
-  - [ ] 4.1.3 Connect snap food page → vision model → USDA lookup → editable form → LLM analysis → results display
-  - [ ] 4.1.4 Ensure health profile sidebar feeds into all three flows
+- [x] **4.1 Wire Up the Pipeline**
+  - [x] 4.1.1 Connect upload page → OCR pipeline → editable form → LLM analysis → results display
+  - [x] 4.1.2 Connect manual entry page → LLM analysis → results display
+  - [x] 4.1.3 Connect snap food page → vision model → USDA lookup → editable form → LLM analysis → results display
+  - [x] 4.1.4 Ensure health profile sidebar feeds into all three flows
 
 - [ ] **4.2 UX Flow Verification**
   - [ ] 4.2.1 Upload a clear photo → verify OCR extracts → edit → confirm → see results
@@ -277,11 +277,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 4.2.3 Snap food photo → verify identified items → adjust → see results
   - [ ] 4.2.4 Change health profile → re-analyze → verify recommendations change
 
-- [ ] **4.3 Error Handling**
-  - [ ] 4.3.1 Blurry/bad image → show warning + suggest manual entry
-  - [ ] 4.3.2 Groq API failure → show `st.error()` with message
-  - [ ] 4.3.3 USDA API failure → gracefully skip, don't crash
-  - [ ] 4.3.4 Missing health profile fields → still works with generic analysis
+- [x] **4.3 Error Handling**
+  - [x] 4.3.1 Blurry/bad image → show warning + suggest manual entry
+  - [x] 4.3.2 Groq API failure → show `st.error()` with message
+  - [x] 4.3.3 USDA API failure → gracefully skip, don't crash
+  - [x] 4.3.4 Missing health profile fields → still works with generic analysis
 
 ---
 

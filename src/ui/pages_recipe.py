@@ -32,13 +32,25 @@ def _render_pantry_builder():
         )
         if uploaded_label and st.button("Add from Label", key="add_label"):
             try:
-                from src.ocr.extractor import extract_nutrition
+                from PIL import Image
+                from src.ocr.extractor import extract
 
-                nutrition, raw_text = extract_nutrition(uploaded_label)
+                uploaded_label.seek(0)
+                image = Image.open(uploaded_label).convert("RGB")
+                result = extract(image)
+                uploaded_label.seek(0)
+
+                if result.confidence == "low":
+                    st.warning(
+                        f"Couldn't read this label clearly — only "
+                        f"{result.fields_parsed} field(s) detected. "
+                        "The item was added but nutrition data may be sparse."
+                    )
+
                 # Use first non-empty line of OCR text as name, or fallback
                 name = "Scanned Item"
-                if raw_text:
-                    for line in raw_text.strip().split("\n"):
+                if result.raw_text:
+                    for line in result.raw_text.strip().split("\n"):
                         line = line.strip()
                         if line and len(line) > 2:
                             name = line[:50]
@@ -46,7 +58,7 @@ def _render_pantry_builder():
                 item = PantryItem(
                     name=name,
                     source="label_scan",
-                    nutrition=nutrition,
+                    nutrition=result.nutrition,
                     quantity="1 serving",
                 )
                 st.session_state.pantry_items.append(item)

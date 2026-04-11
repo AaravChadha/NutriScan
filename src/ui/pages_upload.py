@@ -16,20 +16,42 @@ def _init_session_state():
         st.session_state.upload_nutrition = None
     if "upload_raw_text" not in st.session_state:
         st.session_state.upload_raw_text = ""
+    if "upload_confidence" not in st.session_state:
+        st.session_state.upload_confidence = None
+    if "upload_fields_parsed" not in st.session_state:
+        st.session_state.upload_fields_parsed = 0
     if "upload_result" not in st.session_state:
         st.session_state.upload_result = None
     if "upload_dv" not in st.session_state:
         st.session_state.upload_dv = {}
 
 
-def _run_ocr(uploaded_file) -> tuple[NutritionData, str]:
-    """Run OCR on the uploaded file. Returns (NutritionData, raw_text)."""
+def _run_ocr(uploaded_file) -> tuple[NutritionData, str, str, int]:
+    """Run OCR on the uploaded file.
+
+    Returns (NutritionData, raw_text, confidence, fields_parsed). On any
+    failure (Tesseract missing, corrupted image, unreadable file) shows an
+    st.error and returns empty defaults so the UI can degrade gracefully.
+    """
     try:
-        from src.ocr.extractor import extract_nutrition
-        return extract_nutrition(uploaded_file)
-    except ImportError:
-        # OCR pipeline not built yet (Neil's 3.1)
-        return NutritionData(), ""
+        from src.ocr.extractor import extract
+
+        # Streamlit UploadedFile is a BytesIO-like wrapper — open via PIL and
+        # hand a real PIL Image to extract(). Seek back to 0 so the caller
+        # can still st.image() the same handle.
+        uploaded_file.seek(0)
+        image = Image.open(uploaded_file).convert("RGB")
+        result = extract(image)
+        uploaded_file.seek(0)
+        return (
+            result.nutrition,
+            result.raw_text,
+            result.confidence,
+            result.fields_parsed,
+        )
+    except Exception as e:
+        st.error(f"OCR failed: {e}")
+        return NutritionData(), "", "low", 0
 
 
 def _run_analysis(nutrition_data: NutritionData) -> None:
@@ -78,14 +100,26 @@ def render_upload_tab():
             st.session_state.upload_result = None
             st.session_state.upload_dv = {}
             with st.spinner("Scanning label..."):
-                nutrition, raw_text = _run_ocr(uploaded)
+                nutrition, raw_text, confidence, fields_parsed = _run_ocr(uploaded)
                 st.session_state.upload_nutrition = nutrition
                 st.session_state.upload_raw_text = raw_text
-                if not raw_text:
-                    st.info(
-                        "OCR pipeline not ready yet (waiting on Neil's 3.1). "
-                        "You can still fill in the nutrition data manually below."
-                    )
+                st.session_state.upload_confidence = confidence
+                st.session_state.upload_fields_parsed = fields_parsed
+
+        # 4.3.1 — surface low-confidence OCR to the user so they know to
+        # either correct the values carefully or switch to Manual Entry.
+        if st.session_state.upload_confidence == "low":
+            st.warning(
+                f"Couldn't read the label clearly — only "
+                f"{st.session_state.upload_fields_parsed} field(s) detected. "
+                "Please review the values below carefully, or switch to the "
+                "**Manual Entry** tab for a cleaner path."
+            )
+        elif st.session_state.upload_confidence == "medium":
+            st.info(
+                f"Parsed {st.session_state.upload_fields_parsed} of ~15 fields. "
+                "Some values may be missing — review before analyzing."
+            )
 
         col_img, col_ocr = st.columns([1, 1])
 
