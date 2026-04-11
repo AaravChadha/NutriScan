@@ -288,18 +288,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 5 — Evaluation `April 9 – April 12`
 > Goal: Get concrete accuracy numbers for the presentation.
 
-- [ ] **5.1 OCR Evaluation**
-  - [ ] 5.1.1 Collect 5-10 diverse nutrition label photos (different brands, lighting, angles)
-  - [ ] 5.1.2 Hand-label ground truth in `eval/ground_truth.json`
-  - [ ] 5.1.3 Write `eval/ocr_accuracy.py` to run OCR and compare to ground truth
-  - [ ] 5.1.4 Compute metrics: field extraction rate + field accuracy (±1 tolerance)
-  - [ ] 5.1.5 Record results for poster/presentation
-
-- [ ] **5.2 LLM Evaluation**
-  - [ ] 5.2.1 Create 5 test cases (nutrition label + health profile combos)
-  - [ ] 5.2.2 Run each through the LLM pipeline
-  - [ ] 5.2.3 Score pass/fail: allergen detection, nutrient flagging, preservative ID, recommendation relevance
-  - [ ] 5.2.4 Record results for poster/presentation
+- [ ] **5.1 LLM Evaluation**
+  - [ ] 5.1.1 Create 5 test cases (nutrition label + health profile combos)
+  - [ ] 5.1.2 Run each through the LLM pipeline
+  - [ ] 5.1.3 Score pass/fail: allergen detection, nutrient flagging, preservative ID, recommendation relevance
+  - [ ] 5.1.4 Record results for poster/presentation
 
 ---
 
@@ -358,7 +351,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 7.4.1 Problem statement — food insecurity + nutrition literacy gap
   - [ ] 7.4.2 Solution overview — NutriScan's 5 features (label scan, food snap, manual entry, recipe generator, free local resources)
   - [ ] 7.4.3 Technical architecture slide (OCR, Groq LLM, USDA API, Vision)
-  - [ ] 7.4.4 Evaluation results (OCR accuracy, LLM checklist scores)
+  - [ ] 7.4.4 Evaluation results (LLM checklist scores; vision-vs-OCR comparison if 7.6 is done)
   - [ ] 7.4.5 Embed or link video walkthrough
   - [ ] 7.4.6 Future work — expanded local resources, multi-language support, mobile app
   - [ ] 7.4.7 Practice talk (aim for ~10 min depending on symposium format)
@@ -368,13 +361,19 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [ ] 7.5.2 Video plays correctly from slides
   - [ ] 7.5.3 Backup: have app running on laptop in case of Q&A ("can you show me X?")
 
+- [ ] **7.6 Stretch — Vision vs OCR Comparison** (only if Phase 7.1-7.5 are done with time to spare)
+  > Optional talking point: show the engineering pivot from Tesseract OCR to Groq vision for label reading. One slide, ~30s of talk time.
+  - [ ] 7.6.1 Hand-label ground truth for the 4 photos already in `tests/sample_labels/` (fda_2014, agave_nectar, monster_energy, iphone_test) in `eval/ground_truth.json`
+  - [ ] 7.6.2 Write `eval/label_reader_accuracy.py` — runs both paths (vision via `extract_label_with_vision`, OCR fallback via `extract`) on each image, prints a side-by-side field-extraction table
+  - [ ] 7.6.3 Add one comparison slide to the deck: table + one-line narrative ("vision was 8-10× more accurate on real phone photos, which is why we made it the primary path")
+
 ---
 
 ## Task Division
 
 | Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 |--------|---------|---------|---------|---------|
-| **Aarav** | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | 5.2 LLM eval · 5.1 vision label reader eval | — |
+| **Aarav** | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | 5.1 LLM eval | — |
 | **Nuv** | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | 6.4 Find Free Food tab UI |
 | **Neil** | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
 
@@ -414,6 +413,6 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ## Verification Summary
 - **Unit tests:** OCR parsing, DV% math, prompt construction, response parsing, recipe generation (`pytest tests/`)
 - **Integration tests (manual):** Clear photo, blurry photo, food snap, allergen scenario, diet goal scenario, empty profile, recipe from pantry, free resource lookup
-- **Evaluation:** OCR field accuracy on 5-10 images; LLM checklist on 5 test cases; vision food ID spot checks; recipe quality spot checks
+- **Evaluation:** LLM checklist on 5 test cases (Phase 5.1); vision food ID spot checks; recipe quality spot checks; optional vision-vs-OCR comparison as a stretch slide (Phase 7.6)
 - **Video recording:** Run all 9 walkthrough scenarios (Phase 7.2) and screen record before April 16
 - **Pre-talk check:** Slides + video ready, app running as backup for Q&A
