@@ -271,11 +271,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 4.1.3 Connect snap food page → vision model → USDA lookup → editable form → LLM analysis → results display
   - [x] 4.1.4 Ensure health profile sidebar feeds into all three flows
 
-- [ ] **4.2 UX Flow Verification**
+- [x] **4.2 UX Flow Verification**
   - [x] 4.2.1 Upload a clear photo → verify OCR extracts → edit → confirm → see results
-  - [ ] 4.2.2 Manual entry → fill form → see results
-  - [ ] 4.2.3 Snap food photo → verify identified items → adjust → see results
-  - [ ] 4.2.4 Change health profile → re-analyze → verify recommendations change
+  - [x] 4.2.2 Manual entry → fill form → see results
+  - [x] 4.2.3 Snap food photo → verify identified items → adjust → see results
+  - [x] 4.2.4 Change health profile → re-analyze → verify recommendations change
 
 - [x] **4.3 Error Handling**
   - [x] 4.3.1 Blurry/bad image → show warning + suggest manual entry
