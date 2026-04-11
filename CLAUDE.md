@@ -126,13 +126,13 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.1.1.5 Apply Gaussian blur to reduce noise
     - [x] 3.1.1.6 Return processed image as numpy array
 
-  - [ ] **3.1.2 OCR Extraction** (`src/ocr/extractor.py`)
-    - [ ] 3.1.2.1 Call `preprocessor.preprocess(image)` to get cleaned image
-    - [ ] 3.1.2.2 Run `pytesseract.image_to_string()` with config `--psm 6`
-    - [ ] 3.1.2.3 Build regex patterns for each nutrient field (e.g. `r"total\s*fat\s*(\d+\.?\d*)\s*g"`)
-    - [ ] 3.1.2.4 Parse ingredients list (find "Ingredients:" line, capture until next section)
-    - [ ] 3.1.2.5 Return parsed `NutritionData` object + raw OCR text (for debugging)
-    - [ ] 3.1.2.6 Add confidence indicator — count parsed fields out of ~15; warn if < 5
+  - [x] **3.1.2 OCR Extraction** (`src/ocr/extractor.py`)
+    - [x] 3.1.2.1 Call `preprocessor.preprocess(image)` to get cleaned image
+    - [x] 3.1.2.2 Run `pytesseract.image_to_string()` with config `--psm 6`
+    - [x] 3.1.2.3 Build regex patterns for each nutrient field (e.g. `r"total\s*fat\s*(\d+\.?\d*)\s*g"`)
+    - [x] 3.1.2.4 Parse ingredients list (find "Ingredients:" line, capture until next section)
+    - [x] 3.1.2.5 Return parsed `NutritionData` object + raw OCR text (for debugging)
+    - [x] 3.1.2.6 Add confidence indicator — count parsed fields out of ~15; warn if < 5
 
   - [ ] **3.1.3 OCR Testing**
     - [ ] 3.1.3.1 Collect 3-4 sample nutrition label photos
