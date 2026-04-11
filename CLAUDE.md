@@ -200,7 +200,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.3.6.2 Include text area for ingredients list
     - [x] 3.3.6.3 "Analyze" button triggers LLM analysis
 
-- [ ] **3.4 Food Photo Recognition (Track D — Aarav)**
+- [x] **3.4 Food Photo Recognition (Track D — Aarav)**
   > Upload a photo of actual food (not a label) → AI identifies items + portions → pulls nutrition data from USDA → feeds into existing analysis pipeline.
 
   - [x] **3.4.1 Vision Prompt** (`src/llm/prompts.py`)
@@ -227,10 +227,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
     - [x] 3.4.4.5 "Get Nutrition & Analyze" button → USDA lookup → populate `nutrition_editor` → LLM analysis
     - [x] 3.4.4.6 Show disclaimer: "Portions are AI-estimated — adjust if needed for accuracy"
 
-  - [ ] **3.4.5 Vision Testing**
-    - [ ] 3.4.5.1 Manual test: photo of simple meal (e.g. apple, sandwich) → check identified items
-    - [ ] 3.4.5.2 Manual test: photo of complex plate → verify reasonable portion estimates
-    - [ ] 3.4.5.3 Test USDA bridge with known foods → verify nutrition values are reasonable
+  - [x] **3.4.5 Vision Testing**
+    - [x] 3.4.5.1 Manual test: photo of simple meal (e.g. apple, sandwich) → check identified items
+    - [x] 3.4.5.2 Manual test: photo of complex plate → verify reasonable portion estimates
+    - [x] 3.4.5.3 Test USDA bridge with known foods → verify nutrition values are reasonable
 
 ---
 
