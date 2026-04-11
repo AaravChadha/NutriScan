@@ -164,11 +164,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 - [ ] **3.3 USDA API + Streamlit UI (Track C — Nuv)**
 
-  - [ ] **3.3.1 USDA Client + Open Food Facts Fallback** (`src/nutrition/usda_client.py`, `src/nutrition/openfoodfacts_client.py`)
-    - [ ] 3.3.1.1 Register for free API key at api.data.gov
-    - [ ] 3.3.1.2 Write `search_food(query, api_key) -> dict` calling `/fdc/v1/foods/search`
-    - [ ] 3.3.1.3 Write `check_preservatives(ingredients_list) -> list[str]` with hardcoded preservative list
-    - [ ] 3.3.1.4 Cache results in `st.session_state`
+  - [x] **3.3.1 USDA Client + Open Food Facts Fallback** (`src/nutrition/usda_client.py`, `src/nutrition/openfoodfacts_client.py`)
+    - [x] 3.3.1.1 Register for free API key at api.data.gov
+    - [x] 3.3.1.2 Write `search_food(query, api_key) -> dict` calling `/fdc/v1/foods/search`
+    - [x] 3.3.1.3 Write `check_preservatives(ingredients_list) -> list[str]` with hardcoded preservative list
+    - [x] 3.3.1.4 Cache results in `st.session_state`
     - [x] 3.3.1.5 Write Open Food Facts client (`openfoodfacts_client.py`) + `lookup_food(query, api_key)` wrapper that tries USDA first, falls back to Open Food Facts on miss (covers branded/packaged products USDA doesn't index well)
 
   - [x] **3.3.2 Health Profile Form** (`src/ui/components.py`)
