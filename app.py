@@ -35,5 +35,5 @@ with tab4:
     render_recipe_tab()
 
 with tab5:
-    st.header("Find Free Food Near You")
-    st.info("Coming soon — Neil's local resource backend (Phase 6) will power this tab.")
+    from src.ui.pages_find import render_find_tab
+    render_find_tab()

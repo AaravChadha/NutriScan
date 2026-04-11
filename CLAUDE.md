@@ -319,11 +319,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 6.3.1 Write prompt: given nutrient gaps + nearby free resources → personalized advice ("You're low on iron — the Lafayette Community Food Bank on Main St has free produce distributions on Saturdays")
   - [x] 6.3.2 Frame around free/low-cost access: food bank hours, SNAP-eligible stores, free meal schedules, community garden sign-ups
 
-- [ ] **6.4 UI — "Find Free Food Near You" Tab**
-  - [ ] 6.4.1 Zip code / location input
-  - [ ] 6.4.2 Display nutrient gap summary
-  - [ ] 6.4.3 List of free/low-cost food resources with hours, address, and eligibility info
-  - [ ] 6.4.4 Personalized LLM advice connecting nutrient gaps to specific free resources
+- [x] **6.4 UI — "Find Free Food Near You" Tab**
+  - [x] 6.4.1 Zip code / location input
+  - [x] 6.4.2 Display nutrient gap summary
+  - [x] 6.4.3 List of free/low-cost food resources with hours, address, and eligibility info
+  - [x] 6.4.4 Personalized LLM advice connecting nutrient gaps to specific free resources
 
 ---
 
@@ -412,6 +412,15 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - Phase 3.1.1 preprocessor (`src/ocr/preprocessor.py`): PIL/path/numpy loader, grayscale, upscale, adaptive threshold, Gaussian blur
 - Phase 3.1.2 extractor (`src/ocr/extractor.py`): Tesseract invocation with `--psm 6`, per-nutrient regex patterns, ingredients parser, confidence indicator
 - Phase 3.1.3.3 / 3.1.3.4: hardcoded-string unit tests in `tests/test_ocr.py` covering clean / spaced / decimal / sparse / noisy label formats
+
+### Already Completed (Nuv)
+- 3.3.1: USDA client (`search_food`, `check_preservatives`, session_state caching)
+- 3.3.5: Upload Label page (file uploader, image display, OCR stub, nutrition editor, analyze flow)
+- 3.3.6: Manual Entry page (blank nutrition editor, analyze flow)
+- 3.4.4: Snap Food page UI (camera + file upload, identify button, editable food table, analyze flow)
+- 6.2.2–6.2.5: `find_local_resources()` + curated West Lafayette / Lafayette resource list (`src/resources/locator.py`)
+- 6.3: LLM resource recommendation layer (prompts + `GroqClient.recommend_resources()`)
+- 6.4: Find Free Food Near You tab UI (zip input, nutrient gap summary, resource cards, personalized LLM advice)
 
 ---
 

@@ -188,16 +188,16 @@ class GroqClient:
     ) -> dict:
         """Generate personalized free-resource recommendations.
 
-        6.3.1 + 6.3.2  Uses the LLM to connect nutrient gaps to specific
-        local free food resources with actionable advice.
+        6.3.1 + 6.3.2  Connects nutrient gaps to specific local free food
+        resources with actionable advice.
 
         Args:
-            nutrient_gaps: list of dicts from NutrientGap dataclasses.
+            nutrient_gaps: list of dicts with 'nutrient', 'current_pct_dv',
+                'label', 'food_suggestions'.
             local_resources: list of dicts from FoodResource dataclasses.
 
         Returns:
-            Dict with 'personalized_recommendations', 'general_tips',
-            and 'summary'.
+            Dict with 'summary' (str) and 'tips' (list[str]).
         """
         messages = [
             {"role": "system", "content": build_resource_recommendation_system_prompt()},
@@ -214,21 +214,15 @@ class GroqClient:
             data = json.loads(raw)
         except json.JSONDecodeError:
             st.error("The AI returned an invalid response. Please try again.")
-            return {
-                "personalized_recommendations": [],
-                "general_tips": [],
-                "summary": "Unable to generate recommendations at this time.",
-            }
+            return {"summary": "Unable to generate recommendations at this time.", "tips": []}
         except Exception as e:
             st.error(f"Resource recommendation failed: {e}")
-            return {
-                "personalized_recommendations": [],
-                "general_tips": [],
-                "summary": "Unable to generate recommendations at this time.",
-            }
+            return {"summary": "Unable to generate recommendations at this time.", "tips": []}
 
+        # Merge personalized_recommendations + general_tips into a flat tips list
+        tips = [r.get("advice", "") for r in data.get("personalized_recommendations", []) if r.get("advice")]
+        tips += data.get("general_tips", [])
         return {
-            "personalized_recommendations": data.get("personalized_recommendations", []),
-            "general_tips": data.get("general_tips", []),
             "summary": data.get("summary", ""),
+            "tips": tips,
         }

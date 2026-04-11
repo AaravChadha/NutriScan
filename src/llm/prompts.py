@@ -1,5 +1,7 @@
 """Prompt templates for Groq LLM calls."""
 
+import json
+
 
 def build_vision_system_prompt() -> str:
     """System prompt for food photo identification (Snap Food tab).
