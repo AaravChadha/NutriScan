@@ -69,7 +69,8 @@ _NUTRIENT_PATTERNS: list[tuple[str, re.Pattern]] = [
     # --- micronutrients -----------------------------------------------
     ("vitamin_d",      re.compile(r"vitamin\s*d\s*(\d+\.?\d*)\s*(?:mcg|µg|ug)", re.IGNORECASE)),
     ("calcium",        re.compile(r"calcium\s*(\d+\.?\d*)\s*m?g",    re.IGNORECASE)),
-    ("iron",           re.compile(r"iron\s*(\d+\.?\d*)\s*m?g",       re.IGNORECASE)),
+    # Tesseract often misreads "Iron" as "lron" (lowercase L) or "1ron" — accept all three.
+    ("iron",           re.compile(r"[il1]ron\s*(\d+\.?\d*)\s*m?g",    re.IGNORECASE)),
     ("potassium",      re.compile(r"potassium\s*(\d+\.?\d*)\s*m?g",  re.IGNORECASE)),
 ]
 
@@ -78,8 +79,15 @@ _SERVING_SIZE_RE = re.compile(
     r"serving\s*size\s*[:\-]?\s*(.+)",
     re.IGNORECASE,
 )
+# Servings per container — match either ordering:
+#   "Servings Per Container 8"  /  "Servings Per Container: about 8"
+#   "8 servings per container"  (FDA 2014+ label puts the number first)
 _SERVINGS_PER_CONTAINER_RE = re.compile(
     r"servings?\s*per\s*container\s*[:\-]?\s*(?:about\s*)?(\d+\.?\d*)",
+    re.IGNORECASE,
+)
+_SERVINGS_PER_CONTAINER_REVERSED_RE = re.compile(
+    r"(?:about\s*)?(\d+\.?\d*)\s*servings?\s*per\s*container",
     re.IGNORECASE,
 )
 
@@ -159,7 +167,10 @@ def _parse_nutrition(text: str) -> tuple[NutritionData, int]:
         serving_size = ssize_match.group(1).strip().split("\n")[0].strip()
 
     servings_per_container = 1.0
-    spc_match = _SERVINGS_PER_CONTAINER_RE.search(text)
+    spc_match = (
+        _SERVINGS_PER_CONTAINER_RE.search(text)
+        or _SERVINGS_PER_CONTAINER_REVERSED_RE.search(text)
+    )
     if spc_match:
         try:
             servings_per_container = float(spc_match.group(1))
@@ -213,13 +224,15 @@ def _parse_ingredients(text: str) -> str:
     # Grab everything after "Ingredients:"
     remainder = text[ing_match.end():]
 
-    # Cut off at the next section-like header
+    # Cut off at the next section-like header.
+    # The keyword alternatives are case-insensitive via the inline (?i:...) flag,
+    # but the [A-Z]{5,} "all-caps header" check stays case-sensitive — otherwise
+    # IGNORECASE would make it match any 5+ letter word and truncate mid-list.
     end_match = re.search(
-        r"\n\s*(?:allergen|contains|distributed|manufactured|warnings?|storage|"
-        r"best\s*(?:by|before)|expir|nutrition\s*facts|percent\s*daily|"
-        r"[A-Z]{5,})",  # ≥5 consecutive uppercase letters likely = new section
+        r"\n\s*(?:(?i:allergen|contains|distributed|manufactured|warnings?|storage|"
+        r"best\s*(?:by|before)|expir|nutrition\s*facts|percent\s*daily)|"
+        r"[A-Z]{5,})",
         remainder,
-        re.IGNORECASE,
     )
     if end_match:
         remainder = remainder[: end_match.start()]

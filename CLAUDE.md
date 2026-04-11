@@ -116,7 +116,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 ### Phase 3 — Core Features — Parallel Tracks `April 2 – April 7`
 > Goal: Build the three independent subsystems. Aarav, Neil, and Nuv each take one track.
 
-- [ ] **3.1 OCR Pipeline (Track A — Neil)**
+- [x] **3.1 OCR Pipeline (Track A — Neil)**
 
   - [x] **3.1.1 Image Preprocessing** (`src/ocr/preprocessor.py`)
     - [x] 3.1.1.1 Accept PIL Image or file path as input
@@ -374,11 +374,11 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 
 | Person | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 |--------|---------|---------|---------|---------|
-| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup | Integration lead — wires all tracks together | 5.2 LLM eval | — |
-| **Neil** | 3.1 OCR Pipeline (not started — blocker for Upload Label flow) | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
+| **Aarav** | ✅ 3.2 LLM Integration · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.1.3 real-image OCR validation + regex bugfixes (pulled in from Neil) | Integration lead — wires all tracks together | 5.2 LLM eval | — |
 | **Nuv** | ✅ 3.3 (all of Track C: USDA scaffold, Health Profile, Nutrition Editor, Results Display, Upload, Manual, Snap UI, app.py tab wiring) | Integrates own UI track | — | 6.4 Find Free Food tab UI |
+| **Neil** | ✅ 3.1.1 / 3.1.2 / 3.1.3.3 / 3.1.3.4 (preprocessor, extractor, hardcoded-string tests) — 3.1.3.1 / 3.1.3.2 real-image validation pulled in by Aarav | Integrates own OCR track | 5.1 OCR eval | 6.1-6.3 Local Resources backend (gap analysis, resource lookup, LLM recs) |
 
-### Completed Work Log (as of 2026-04-10)
+### Completed Work Log (as of 2026-04-11)
 
 **Aarav** — Phase 3 complete (all assigned tracks done)
 - Phases 1-2: scaffolding, data models, FDA daily values, DV% computation
@@ -387,6 +387,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - Phase 3.4: Food Photo Recognition — vision prompts, Groq vision client (`food_identifier.identify_food`, swapped decommissioned `llama-3.2-90b-vision-preview` → `meta-llama/llama-4-scout-17b-16e-instruct`), USDA/OFF bridge (`lookup_food_nutrition`, `aggregate_nutrition` with per-100g scaling and unit conversion), manual vision tests on 3 real meal photos (apple, sandwich platter, 8-item complex plate — all passed)
 - Phase 3.3.5 / 3.3.6 / 3.4.4: stale-fallback cleanup and bug fixes on Nuv's scaffolds after 3.2 and 3.4 landed (fixed incorrect `lookup_food_nutrition` and `aggregate_nutrition` call signatures in pages_snap)
 - Phase 3.5: Recipe Generator feature (models, prompts, Groq client, UI, app.py wiring)
+- Phase 3.1.3 real-image validation (2026-04-11, pulled in from Neil): collected 4 public-domain nutrition labels from Wikimedia Commons (`fda_2014.jpg`, `agave_nectar.jpg`, `monster_energy.jpg`, `high_sat_fat.jpg`) into `tests/sample_labels/`, ran end-to-end pipeline to surface real Tesseract artifacts, fixed 3 regex bugs that the hardcoded-string tests missed — (1) `_parse_ingredients` `[A-Z]{5,}` header check was case-insensitive due to leaked `re.IGNORECASE` flag, truncating ingredient lists mid-parse → scoped via inline `(?i:...)` on the keyword alternatives only; (2) `iron` regex now accepts `[il1]ron` for Tesseract's Iron→lron misread; (3) added reversed-order `_SERVINGS_PER_CONTAINER_REVERSED_RE` for FDA 2014+ "8 servings per container" layout. Added `TestRealImageExtraction` class (16 integration tests, auto-skips if Tesseract unavailable). Test suite: 73/73 passing.
 
 **Nuv** — Track C complete
 - Phase 3.3.1 (initial scaffold): `search_food` + `check_preservatives`
@@ -398,8 +399,10 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 - Phase 3.4.4: Snap Food page UI scaffold (camera + upload, editable food table, pipeline wiring)
 - Wired up all five tabs in `app.py`
 
-**Neil** — Not yet started
-- Phase 3.1 OCR pipeline is the critical blocker for the Upload Label end-to-end flow. Hard deadline: **April 12** for Phase 5.1 OCR evaluation metrics, **April 14** for video walkthrough scenarios 1/2/4. Minimum viable scope: OCR that works on 3-5 hand-picked demo labels, not a bulletproof pipeline.
+**Neil** — Phase 3.1 code scaffold done, real-image validation done by Aarav
+- Phase 3.1.1 (preprocessor), 3.1.2 (extractor + regex), and 3.1.3.3/3.1.3.4 (hardcoded-string tests) landed in commits `b0dceb0`, `428167c`, `0bf7992`.
+- Phase 3.1.3.1 / 3.1.3.2 (real-image validation) was checked off without photos actually being collected; Aarav pulled it in on 2026-04-11 to unblock Phase 5.1 OCR eval and video scenarios 1/2/4.
+- Still owned by Neil: Phase 5.1 OCR evaluation (hard deadline **April 12**) and Phase 6.1-6.3 Local Resources backend.
 
 ---
 

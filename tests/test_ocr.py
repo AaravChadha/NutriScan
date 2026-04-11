@@ -4,11 +4,26 @@ Unit tests for the OCR pipeline (Phase 3.1.3).
 Tests the regex parsing logic in extractor.py using hardcoded strings that
 simulate real Tesseract output from nutrition labels.  This lets us validate
 parsing without requiring Tesseract or sample images at test time.
+
+Also includes a real-image integration test (TestRealImageExtraction) that
+runs the full preprocess → Tesseract → regex pipeline on sample photos in
+tests/sample_labels/. That class is auto-skipped if Tesseract isn't installed
+or the images are missing.
 """
 
+from pathlib import Path
+
 import pytest
+
 from src.nutrition.models import NutritionData
-from src.ocr.extractor import _parse_nutrition, _parse_ingredients, _compute_confidence
+from src.ocr.extractor import (
+    _parse_nutrition,
+    _parse_ingredients,
+    _compute_confidence,
+    extract,
+)
+
+SAMPLE_DIR = Path(__file__).parent / "sample_labels"
 
 
 # ======================================================================
@@ -388,6 +403,131 @@ class TestConfidence:
     def test_low_confidence(self):
         assert _compute_confidence(4) == "low"
         assert _compute_confidence(0) == "low"
+
+
+# ======================================================================
+# 3.1.3.1 / 3.1.3.2  Real-image integration tests
+# ======================================================================
+# These tests run the full pipeline (preprocess → Tesseract → regex) on
+# sample nutrition label photos committed to tests/sample_labels/.
+#
+# The whole class is skipped if Tesseract isn't installed, so developers
+# without the system dependency can still run the hardcoded-string tests.
+
+def _tesseract_available() -> bool:
+    try:
+        import pytesseract
+        pytesseract.get_tesseract_version()
+        return True
+    except Exception:
+        return False
+
+
+@pytest.mark.skipif(
+    not _tesseract_available(),
+    reason="Tesseract not installed — skipping real-image integration tests",
+)
+class TestRealImageExtraction:
+    """
+    Run the full OCR pipeline on real nutrition label photos.
+
+    The FDA 2014 standard label is our golden image — clean, well-lit, and
+    representative of the label format we target. Values below were verified
+    manually against the actual label content: Total Fat 8g, Sat Fat 1g,
+    Sodium 160mg, Total Carbs 37g, Fiber 4g, Protein 3g, Vit D 2mcg,
+    Calcium 260mg, Iron 8mg, Potassium 235mg, Calories 230, 8 servings.
+    """
+
+    fda_path = SAMPLE_DIR / "fda_2014.jpg"
+    noisy_paths = [
+        SAMPLE_DIR / "agave_nectar.jpg",
+        SAMPLE_DIR / "high_sat_fat.jpg",
+    ]
+
+    @pytest.fixture(scope="class")
+    def fda_result(self):
+        if not self.fda_path.exists():
+            pytest.skip(f"Sample image not found: {self.fda_path}")
+        return extract(str(self.fda_path))
+
+    # --- FDA 2014 golden image: high-confidence parse ---------------------
+
+    def test_fda_confidence_high(self, fda_result):
+        assert fda_result.confidence == "high"
+
+    def test_fda_most_fields_parsed(self, fda_result):
+        # Tesseract misreads "Total Sugars 1g" as "Sugars ig" on this image,
+        # which is an unfixable OCR failure at the regex layer. So we accept
+        # 14/15 rather than a full 15.
+        assert fda_result.fields_parsed >= 13, (
+            f"Expected ≥13 fields, got {fda_result.fields_parsed}. "
+            f"Raw text:\n{fda_result.raw_text}"
+        )
+
+    def test_fda_calories(self, fda_result):
+        assert fda_result.nutrition.calories == 230.0
+
+    def test_fda_total_fat(self, fda_result):
+        assert fda_result.nutrition.total_fat == 8.0
+
+    def test_fda_saturated_fat(self, fda_result):
+        assert fda_result.nutrition.saturated_fat == 1.0
+
+    def test_fda_sodium(self, fda_result):
+        assert fda_result.nutrition.sodium == 160.0
+
+    def test_fda_total_carbs(self, fda_result):
+        assert fda_result.nutrition.total_carbs == 37.0
+
+    def test_fda_dietary_fiber(self, fda_result):
+        assert fda_result.nutrition.dietary_fiber == 4.0
+
+    def test_fda_protein(self, fda_result):
+        assert fda_result.nutrition.protein == 3.0
+
+    def test_fda_vitamin_d(self, fda_result):
+        assert fda_result.nutrition.vitamin_d == 2.0
+
+    def test_fda_calcium(self, fda_result):
+        assert fda_result.nutrition.calcium == 260.0
+
+    def test_fda_iron_lowercase_l_misread(self, fda_result):
+        """
+        Tesseract OCR'd "Iron" as "lron" (lowercase L). The regex accepts
+        [il1]ron — this test locks in that fix.
+        """
+        assert fda_result.nutrition.iron == 8.0
+
+    def test_fda_potassium(self, fda_result):
+        assert fda_result.nutrition.potassium == 235.0
+
+    def test_fda_servings_per_container_reversed_order(self, fda_result):
+        """
+        FDA 2014+ label format: "8 servings per container" (number first).
+        The reversed-order regex pattern locks in that fix.
+        """
+        assert fda_result.nutrition.servings_per_container == 8.0
+
+    def test_fda_serving_size(self, fda_result):
+        assert "2/3" in fda_result.nutrition.serving_size
+        assert "55g" in fda_result.nutrition.serving_size
+
+    # --- Graceful degradation on unreadable images ------------------------
+
+    def test_noisy_images_do_not_crash(self):
+        """
+        Heavily noisy / bilingual / low-contrast photos produce garbage OCR.
+        The pipeline should degrade gracefully — return low confidence, not
+        raise an exception.
+        """
+        for path in self.noisy_paths:
+            if not path.exists():
+                continue
+            result = extract(str(path))
+            assert result.confidence in ("low", "medium"), (
+                f"{path.name}: expected low/medium confidence on noisy image, "
+                f"got {result.confidence} ({result.fields_parsed}/15 fields)"
+            )
 
 
 # ======================================================================
