@@ -57,6 +57,8 @@ def health_profile_form() -> HealthProfile:
         </div>
     </div>""", unsafe_allow_html=True)
 
+    st.sidebar.divider()
+
     # ── Profile Settings (collapsed to save space) ───────────────────────────
     with st.sidebar.expander("⚙️ Edit Profile Settings", expanded=False):
         allergens = st.multiselect(
@@ -234,33 +236,27 @@ def nutrition_editor(nutrition_data: NutritionData, key_prefix: str = "") -> Nut
                 step=1.0, key=k("sodium"),
             )
 
-        # ── Micronutrients (collapsed by default) ─────────────────────────────
-        show_micro = st.checkbox("🌿 Show Micronutrients", value=False, key=k("show_micro"))
-        if show_micro:
-            col1, col2 = st.columns(2)
-            with col1:
-                vitamin_d = st.number_input(
-                    "Vitamin D (mcg)", min_value=0.0, value=nutrition_data.vitamin_d,
-                    step=0.1, key=k("vitamin_d"),
-                )
-                iron = st.number_input(
-                    "Iron (mg)", min_value=0.0, value=nutrition_data.iron,
-                    step=0.1, key=k("iron"),
-                )
-            with col2:
-                calcium = st.number_input(
-                    "Calcium (mg)", min_value=0.0, value=nutrition_data.calcium,
-                    step=1.0, key=k("calcium"),
-                )
-                potassium = st.number_input(
-                    "Potassium (mg)", min_value=0.0, value=nutrition_data.potassium,
-                    step=1.0, key=k("potassium"),
-                )
-        else:
-            vitamin_d = nutrition_data.vitamin_d
-            iron = nutrition_data.iron
-            calcium = nutrition_data.calcium
-            potassium = nutrition_data.potassium
+        # ── Micronutrients ────────────────────────────────────────────────────
+        _section_header("🌿", "Micronutrients", color="#1565C0", border_color="rgba(30,136,229,0.2)")
+        col1, col2 = st.columns(2)
+        with col1:
+            vitamin_d = st.number_input(
+                "Vitamin D (mcg)", min_value=0.0, value=nutrition_data.vitamin_d,
+                step=0.1, key=k("vitamin_d"),
+            )
+            iron = st.number_input(
+                "Iron (mg)", min_value=0.0, value=nutrition_data.iron,
+                step=0.1, key=k("iron"),
+            )
+        with col2:
+            calcium = st.number_input(
+                "Calcium (mg)", min_value=0.0, value=nutrition_data.calcium,
+                step=1.0, key=k("calcium"),
+            )
+            potassium = st.number_input(
+                "Potassium (mg)", min_value=0.0, value=nutrition_data.potassium,
+                step=1.0, key=k("potassium"),
+            )
 
         ingredients_list = st.text_area(
             "📋 Ingredients List",
@@ -271,6 +267,7 @@ def nutrition_editor(nutrition_data: NutritionData, key_prefix: str = "") -> Nut
             placeholder="e.g. Water, Enriched Flour, Sugar, Salt...",
         )
 
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
         submitted = st.form_submit_button(
             "✅ Confirm & Analyze", type="primary", use_container_width=True
         )

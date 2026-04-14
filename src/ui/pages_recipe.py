@@ -142,7 +142,7 @@ def _render_pantry_builder():
                     quantity="1 serving",
                 )
                 st.session_state.pantry_items.append(item)
-                st.success(f"✅ Added: {item.name}")
+                st.toast(f"Added: {item.name}", icon="✅")
                 st.rerun()
             except Exception as e:
                 st.error(f"Label reading failed: {e}. Try manual entry instead.")
@@ -168,7 +168,7 @@ def _render_pantry_builder():
                         quantity=f"{grams}g" if grams else "",
                     )
                     st.session_state.pantry_items.append(item)
-                st.success(f"✅ Added {len(foods)} item(s) from photo")
+                st.toast(f"Added {len(foods)} item(s) from photo", icon="✅")
                 st.rerun()
             except Exception as e:
                 st.error(f"Food identification failed: {e}. Try manual entry instead.")
@@ -193,6 +193,7 @@ def _render_pantry_builder():
             st.session_state.pantry_items.append(
                 PantryItem(name=manual_name, source="manual", quantity=manual_qty)
             )
+            st.toast(f"Added: {manual_name}", icon="✅")
             st.rerun()
 
 
@@ -249,13 +250,15 @@ def _render_pantry_display():
             )
         with col_rm:
             if st.button("✕ Remove", key=f"remove_{i}"):
-                st.session_state.pantry_items.pop(i)
+                removed = st.session_state.pantry_items.pop(i)
+                st.toast(f"Removed: {removed.name}", icon="🗑️")
                 st.rerun()
 
     st.markdown("<div style='margin-top:0.25rem;'></div>", unsafe_allow_html=True)
     if st.button("🗑️ Clear All", key="clear_pantry"):
         st.session_state.pantry_items = []
         st.session_state.generated_recipe = None
+        st.toast("Pantry cleared", icon="🗑️")
         st.rerun()
 
 
