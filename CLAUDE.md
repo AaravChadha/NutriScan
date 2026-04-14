@@ -334,7 +334,7 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 7.1.1 Clean up Streamlit styling (page title, icon, colors)
   - [x] 7.1.2 Add brief app description/instructions on main page
   - [ ] 7.1.3 Final error handling pass — no tracebacks during video recording
-  - [ ] 7.1.4 Write `README.md` — project overview, features, tech stack, setup instructions (venv, `.env` keys, `streamlit run app.py`), screenshots or video link, credits to Aarav/Neil/Nuv + Dataception/Purdue. Do this as early as possible so the repo is presentable to judges/teammates ahead of polish.
+  - [x] 7.1.4 Write `README.md` — project overview, features, tech stack, setup instructions (venv, `.env` keys, `streamlit run app.py`), screenshots or video link, credits to Aarav/Neil/Nuv + Dataception/Purdue. Do this as early as possible so the repo is presentable to judges/teammates ahead of polish.
 
 - [ ] **7.2 Video Walkthrough Scenarios**
   - [ ] 7.2.1 Scenario 1: Upload a clear label photo with no health concerns → basic analysis
@@ -380,7 +380,7 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 
 | Person | Phase 1-2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 |
 |--------|-----------|---------|---------|---------|---------|---------|
-| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | ✅ 7.1.1 / 7.1.2 theme-adaptive dark mode polish, scroll fix, toast notifications |
+| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | ✅ 7.1.1 / 7.1.2 theme-adaptive dark mode polish, scroll fix, toast notifications · ✅ 7.1.4 README.md |
 | **Nuv**   | — | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | ✅ 6.4 Find Free Food tab UI | ✅ 7.1.1 comprehensive UI overhaul (CSS theme, grade badges, styled cards, recipe layout) |
 | **Neil**  | — | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | ✅ 6.1 Nutrient gap analysis · ✅ 6.2 Local resource lookup + curated Lafayette list · ✅ 6.3 LLM recommendation layer | Phase 7 shared |
 
