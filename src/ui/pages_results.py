@@ -54,9 +54,9 @@ def _section_title(icon: str, label: str) -> None:
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:8px;
                 padding:0.35rem 0;margin:0 0 0.65rem;
-                border-bottom:2px solid #C8E6C9;">
+                border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">{icon}</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">{label}</span>
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">{label}</span>
     </div>""", unsafe_allow_html=True)
 
 
@@ -175,7 +175,7 @@ def _render_dv_bars(dv_percentages: dict) -> None:
         return f"""
         <div style="margin:6px 0;">
             <div style="display:flex;justify-content:space-between;
-                        font-size:12px;color:#444;margin-bottom:3px;">
+                        font-size:12px;color:inherit;opacity:0.8;margin-bottom:3px;">
                 <span>{label}</span>
                 <span style="font-weight:700;color:{text_color};">{v}%</span>
             </div>
@@ -186,7 +186,7 @@ def _render_dv_bars(dv_percentages: dict) -> None:
         </div>"""
 
     legend = """
-    <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid #E8F5E9;
+    <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid rgba(46,125,50,0.15);
                 display:flex;gap:1.2rem;font-size:11px;color:#777;flex-wrap:wrap;">
         <span><span style="display:inline-block;width:10px;height:10px;
                            background:#EF5350;border-radius:2px;
@@ -222,8 +222,8 @@ def _render_dv_bars(dv_percentages: dict) -> None:
         all_micro = micro_bars + extra_bars
         mhalf = len(all_micro) // 2 + len(all_micro) % 2
         micro_section = f"""
-        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid #E8F5E9;">
-            <div style="font-size:0.72rem;font-weight:700;color:#1B5E20;
+        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid rgba(46,125,50,0.15);">
+            <div style="font-size:0.72rem;font-weight:700;color:#4CAF50;
                         letter-spacing:0.8px;text-transform:uppercase;
                         margin-bottom:8px;">🌿 Micronutrients & Minerals</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2.5rem;">
@@ -233,9 +233,9 @@ def _render_dv_bars(dv_percentages: dict) -> None:
         </div>"""
 
     st.markdown(f"""
-    <div style="background:white;border-radius:14px;padding:1.2rem 1.5rem;
-                box-shadow:0 2px 10px rgba(0,0,0,0.07);border:1px solid #E8F5E9;">
-        <div style="font-size:0.72rem;font-weight:700;color:#1B5E20;
+    <div style="background:rgba(128,128,128,0.06);border-radius:14px;padding:1.2rem 1.5rem;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);border:1px solid rgba(46,125,50,0.15);">
+        <div style="font-size:0.72rem;font-weight:700;color:#4CAF50;
                     letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;">
             🥩 Macronutrients
         </div>
@@ -259,7 +259,7 @@ def results_display(result: AnalysisResult, dv_percentages: dict) -> None:
         dv_percentages: dict from compute_dv_percentages().
     """
     st.markdown("""
-    <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;
+    <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;
                 margin-bottom:0.85rem;">
         📋 Analysis Results
     </div>""", unsafe_allow_html=True)
@@ -307,9 +307,9 @@ def results_display(result: AnalysisResult, dv_percentages: dict) -> None:
     # ── Summary ───────────────────────────────────────────────────────────────
     if result.summary:
         st.markdown(f"""
-        <div style="background:white;border-left:4px solid #66BB6A;
+        <div style="background:rgba(128,128,128,0.06);border-left:4px solid #66BB6A;
                     border-radius:0 10px 10px 0;padding:0.8rem 1.2rem;
-                    color:#333;font-style:italic;font-size:0.91rem;
+                    color:inherit;font-style:italic;font-size:0.91rem;
                     box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:1rem;
                     line-height:1.55;">{result.summary}</div>""",
         unsafe_allow_html=True)
@@ -350,7 +350,7 @@ def results_display(result: AnalysisResult, dv_percentages: dict) -> None:
                     _flag_card(f"✅ {item}", "good")
         else:
             st.markdown("""
-            <div style="background:#F9FDF9;border:1px dashed #C8E6C9;
+            <div style="background:rgba(128,128,128,0.06);border:1px dashed #C8E6C9;
                         border-radius:10px;padding:0.75rem 1rem;
                         color:#6A8A6A;font-size:0.85rem;">
                 No health profile set — add one in the sidebar for personalized goal tracking.
@@ -364,13 +364,13 @@ def results_display(result: AnalysisResult, dv_percentages: dict) -> None:
         for rec in result.recommendations:
             st.markdown(f"""
             <div style="display:flex;gap:10px;align-items:flex-start;
-                        padding:0.6rem 0.9rem;background:white;
+                        padding:0.6rem 0.9rem;background:rgba(128,128,128,0.06);
                         border-radius:9px;margin-bottom:6px;
                         box-shadow:0 1px 5px rgba(0,0,0,0.06);
-                        border:1px solid #E8F5E9;line-height:1.5;">
+                        border:1px solid rgba(46,125,50,0.15);line-height:1.5;">
                 <span style="color:#43A047;font-weight:800;font-size:1rem;
                              flex-shrink:0;margin-top:1px;">→</span>
-                <span style="font-size:0.88rem;color:#333;">{rec}</span>
+                <span style="font-size:0.88rem;color:inherit;">{rec}</span>
             </div>""", unsafe_allow_html=True)
         st.markdown("")
 

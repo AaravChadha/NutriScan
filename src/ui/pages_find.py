@@ -54,12 +54,12 @@ def _get_best_nutrition() -> NutritionData | None:
 def _render_search_bar() -> tuple[str, str, bool]:
     """Render the zip code + type filter search bar. Returns (zip_code, type_choice, search_clicked)."""
     st.markdown("""
-    <div style="font-weight:700;font-size:0.92rem;color:#1B5E20;
+    <div style="font-weight:700;font-size:0.92rem;color:#4CAF50;
                 margin-bottom:0.6rem;display:flex;align-items:center;gap:7px;">
         🔍 Search for Free Food Resources
     </div>""", unsafe_allow_html=True)
 
-    col_zip, col_type, col_btn = st.columns([2, 2, 1])
+    col_zip, col_demo, col_type, col_btn = st.columns([2, 1, 2, 1])
     with col_zip:
         zip_code = st.text_input(
             "📮 Zip Code",
@@ -68,6 +68,11 @@ def _render_search_bar() -> tuple[str, str, bool]:
             max_chars=5,
             key="find_zip_input",
         )
+    with col_demo:
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+        if st.button("📍 Demo: 47906", key="demo_zip", use_container_width=True):
+            st.session_state.find_zip = "47906"
+            st.rerun()
     with col_type:
         type_choice = st.selectbox(
             "🏷️ Resource Type",
@@ -78,13 +83,6 @@ def _render_search_bar() -> tuple[str, str, bool]:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
         search = st.button("🔍 Search", type="primary", key="find_search_btn", use_container_width=True)
 
-    # Demo hint
-    demo_cols = st.columns([3, 1])
-    with demo_cols[1]:
-        if st.button("📍 Try West Lafayette", key="demo_zip", use_container_width=True):
-            st.session_state.find_zip = "47906"
-            st.rerun()
-
     return zip_code, type_choice, search
 
 
@@ -92,12 +90,12 @@ def _render_nutrient_gap_summary() -> list[dict]:
     """Render the nutrient gap section. Returns gaps as dicts for the LLM prompt."""
     st.markdown("""
     <div style="display:flex;align-items:center;gap:8px;padding:0.35rem 0;
-                margin-bottom:0.75rem;border-bottom:2px solid #C8E6C9;">
+                margin-bottom:0.75rem;border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">🔬</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">
             Nutrient Gap Summary
         </span>
-        <span style="font-size:0.76rem;color:#888;font-style:italic;">
+        <span style="font-size:0.76rem;color:inherit;opacity:0.5;font-style:italic;">
             — based on your most recent scan
         </span>
     </div>""", unsafe_allow_html=True)
@@ -106,8 +104,8 @@ def _render_nutrient_gap_summary() -> list[dict]:
 
     if nutrition is None:
         st.markdown("""
-        <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:12px;
-                    padding:1.1rem 1.4rem;color:#6A8A6A;font-size:0.87rem;
+        <div style="background:rgba(128,128,128,0.06);border:1px dashed rgba(46,125,50,0.2);border-radius:12px;
+                    padding:1.1rem 1.4rem;color:inherit;opacity:0.5;font-size:0.87rem;
                     display:flex;align-items:center;gap:12px;">
             <span style="font-size:1.8rem;">💡</span>
             <div>
@@ -123,8 +121,8 @@ def _render_nutrient_gap_summary() -> list[dict]:
 
     if not analysis.gaps:
         st.markdown(f"""
-        <div style="background:#E8F5E9;border:1px solid #66BB6A;border-radius:12px;
-                    padding:1rem 1.25rem;color:#1B5E20;font-size:0.9rem;
+        <div style="background:rgba(46,125,50,0.12);border:1px solid #66BB6A;border-radius:12px;
+                    padding:1rem 1.25rem;color:#4CAF50;font-size:0.9rem;
                     display:flex;align-items:center;gap:10px;">
             <span style="font-size:1.5rem;">✅</span>
             <span><strong>{analysis.summary}</strong></span>
@@ -132,9 +130,9 @@ def _render_nutrient_gap_summary() -> list[dict]:
         return []
 
     st.markdown(f"""
-    <div style="background:#FFF8E1;border-left:4px solid #FFB300;
+    <div style="background:rgba(255,179,0,0.1);border-left:4px solid #FFB300;
                 border-radius:0 10px 10px 0;padding:0.65rem 1rem;
-                font-size:0.84rem;color:#666;margin-bottom:0.8rem;line-height:1.5;">
+                font-size:0.84rem;color:inherit;opacity:0.7;margin-bottom:0.8rem;line-height:1.5;">
         {analysis.summary} — A single food item won't cover a full day's intake.
     </div>""", unsafe_allow_html=True)
 
@@ -198,7 +196,7 @@ def _render_nutrient_gap_summary() -> list[dict]:
 def _render_resource_list(resources: list[FoodResource]):
     if not resources:
         st.markdown("""
-        <div style="background:#FFF8E1;border:1px solid #FFB300;border-radius:12px;
+        <div style="background:rgba(255,179,0,0.1);border:1px solid #FFB300;border-radius:12px;
                     padding:1.25rem 1.5rem;color:#E65100;font-size:0.87rem;
                     line-height:1.55;">
             <strong>⚠️ No resources found for this zip code.</strong><br>
@@ -210,12 +208,12 @@ def _render_resource_list(resources: list[FoodResource]):
 
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:8px;padding:0.35rem 0;
-                margin-bottom:0.75rem;border-bottom:2px solid #C8E6C9;">
+                margin-bottom:0.75rem;border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">📍</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">
             Free Food Resources
         </span>
-        <span style="background:#E8F5E9;color:#2E7D32;padding:1px 10px;
+        <span style="background:rgba(46,125,50,0.12);color:#2E7D32;padding:1px 10px;
                      border-radius:100px;font-size:0.75rem;font-weight:700;">
             {len(resources)} found
         </span>
@@ -240,7 +238,7 @@ def _render_resource_list(resources: list[FoodResource]):
             if r.website else ""
         )
         notes_html = (
-            f'<div style="margin-top:6px;font-size:0.79rem;color:#888;'
+            f'<div style="margin-top:6px;font-size:0.79rem;color:inherit;opacity:0.5;'
             f'font-style:italic;padding-top:5px;border-top:1px solid rgba(0,0,0,0.06);">'
             f'ℹ️ {r.notes}</div>'
             if r.notes else ""
@@ -254,7 +252,7 @@ def _render_resource_list(resources: list[FoodResource]):
             <div style="display:flex;align-items:flex-start;
                         justify-content:space-between;margin-bottom:0.55rem;
                         flex-wrap:wrap;gap:4px;">
-                <span style="font-size:1.0rem;font-weight:800;color:#1A2E1A;">
+                <span style="font-size:1.0rem;font-weight:800;color:inherit;">
                     {icon} {r.name}
                 </span>
                 <span style="background:{badge_bg};color:{badge_text};
@@ -263,7 +261,7 @@ def _render_resource_list(resources: list[FoodResource]):
                     {lbl}
                 </span>
             </div>
-            <div style="font-size:0.85rem;color:#444;line-height:1.65;">
+            <div style="font-size:0.85rem;color:inherit;opacity:0.8;line-height:1.65;">
                 <div>📍 {r.address}, {r.city}, {r.state} {r.zip_code}</div>
                 <div>🕐 {r.hours}</div>
                 <div>👥 {r.eligibility}{phone_html}</div>
@@ -288,17 +286,17 @@ def _resource_to_dict(r: FoodResource) -> dict:
 def _render_llm_advice(gaps: list[dict], resources: list[FoodResource]):
     st.markdown("""
     <div style="display:flex;align-items:center;gap:8px;padding:0.35rem 0;
-                margin-bottom:0.75rem;border-bottom:2px solid #C8E6C9;">
+                margin-bottom:0.75rem;border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">💡</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">
             Personalized Advice
         </span>
     </div>""", unsafe_allow_html=True)
 
     if not resources:
         st.markdown("""
-        <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:12px;
-                    padding:1rem;color:#888;font-size:0.87rem;">
+        <div style="background:rgba(128,128,128,0.06);border:1px dashed rgba(46,125,50,0.2);border-radius:12px;
+                    padding:1rem;color:inherit;opacity:0.5;font-size:0.87rem;">
             Find resources above to get personalized nutrition + access advice.
         </div>""", unsafe_allow_html=True)
         return
@@ -327,9 +325,9 @@ def _render_llm_advice(gaps: list[dict], resources: list[FoodResource]):
     if advice:
         if advice.get("summary"):
             st.markdown(f"""
-            <div style="background:#E8F5E9;border-left:4px solid #66BB6A;
+            <div style="background:rgba(46,125,50,0.12);border-left:4px solid #66BB6A;
                         border-radius:0 12px 12px 0;padding:0.85rem 1.2rem;
-                        color:#1B5E20;font-size:0.9rem;margin-bottom:0.75rem;
+                        color:#4CAF50;font-size:0.9rem;margin-bottom:0.75rem;
                         line-height:1.55;">
                 {advice["summary"]}
             </div>""", unsafe_allow_html=True)
@@ -337,12 +335,12 @@ def _render_llm_advice(gaps: list[dict], resources: list[FoodResource]):
         for tip in advice.get("tips", []):
             st.markdown(f"""
             <div style="display:flex;gap:10px;align-items:flex-start;
-                        padding:0.55rem 0.9rem;background:white;
+                        padding:0.55rem 0.9rem;background:rgba(128,128,128,0.06);
                         border-radius:9px;margin-bottom:6px;
                         box-shadow:0 1px 5px rgba(0,0,0,0.06);
                         border:1px solid #E8F5E9;line-height:1.5;">
                 <span style="color:#43A047;font-weight:800;flex-shrink:0;">→</span>
-                <span style="font-size:0.88rem;color:#333;">{tip}</span>
+                <span style="font-size:0.88rem;color:inherit;">{tip}</span>
             </div>""", unsafe_allow_html=True)
 
         st.caption(
@@ -355,10 +353,10 @@ def render_find_tab():
     """Main entry point for the Find Free Food Near You tab."""
     st.markdown("""
     <div style="margin-bottom:0.75rem;">
-        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">
+        <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;">
             📍 Find Free Food Near You
         </div>
-        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+        <div style="font-size:0.85rem;color:inherit;opacity:0.7;margin-top:2px;">
             Find nearby food banks, pantries, free meals, and SNAP/WIC benefits.
             We'll also show which nutrients you may be missing and where to get them free.
         </div>
@@ -392,8 +390,8 @@ def render_find_tab():
     resources: list[FoodResource] = st.session_state.find_resources
     if not resources and not st.session_state.find_zip:
         st.markdown("""
-        <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:14px;
-                    padding:2rem;color:#888;text-align:center;font-size:0.88rem;">
+        <div style="background:rgba(128,128,128,0.06);border:1px dashed rgba(46,125,50,0.2);border-radius:14px;
+                    padding:2rem;color:inherit;opacity:0.5;text-align:center;font-size:0.88rem;">
             <div style="font-size:2.5rem;margin-bottom:0.5rem;">📍</div>
             <strong>Enter a zip code above</strong> and click Search to see free food
             resources available near you.<br>

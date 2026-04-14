@@ -109,17 +109,17 @@ def _run_analysis(nutrition_data: NutritionData) -> None:
 
 
 def _step(num: int, label: str, sub: str = "") -> None:
-    sub_html = f'<span style="font-weight:400;color:#555;font-size:0.8rem;"> — {sub}</span>' if sub else ""
+    sub_html = f'<span style="font-weight:400;opacity:0.6;font-size:0.8rem;"> — {sub}</span>' if sub else ""
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;
-                background:linear-gradient(90deg,#E8F5E9,transparent);
-                border-left:4px solid #2E7D32;border-radius:0 9px 9px 0;
+                background:rgba(128,128,128,0.08);
+                border-left:3px solid #4CAF50;border-radius:0 8px 8px 0;
                 margin:1rem 0 0.5rem;">
-        <div style="width:26px;height:26px;background:#2E7D32;color:white;
+        <div style="width:24px;height:24px;background:#4CAF50;color:white;
                     border-radius:50%;display:flex;align-items:center;
-                    justify-content:center;font-size:12px;font-weight:800;
+                    justify-content:center;font-size:11px;font-weight:800;
                     flex-shrink:0;">{num}</div>
-        <span style="font-weight:700;font-size:0.9rem;color:#1B5E20;">{label}</span>{sub_html}
+        <span style="font-weight:700;font-size:0.88rem;">{label}</span>{sub_html}
     </div>""", unsafe_allow_html=True)
 
 
@@ -127,8 +127,8 @@ def render_upload_tab():
     """Main entry point for the Upload Label tab."""
     st.markdown("""
     <div style="margin-bottom:0.5rem;">
-        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">📷 Upload Nutrition Label</div>
-        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+        <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;">📷 Upload Nutrition Label</div>
+        <div style="font-size:0.85rem;color:inherit;opacity:0.7;margin-top:2px;">
             Upload a photo of any nutrition label — AI will extract all values automatically.
         </div>
     </div>""", unsafe_allow_html=True)
@@ -189,8 +189,8 @@ def render_upload_tab():
                     st.text(st.session_state.upload_raw_text)
             else:
                 st.markdown("""
-                <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:10px;
-                            padding:1rem;color:#888;font-size:0.84rem;text-align:center;
+                <div style="background:rgba(128,128,128,0.06);border:1px dashed #C8E6C9;border-radius:10px;
+                            padding:1rem;color:inherit;opacity:0.5;font-size:0.84rem;text-align:center;
                             margin-top:0.5rem;">
                     Extracted data will appear here after scanning.
                 </div>""", unsafe_allow_html=True)

@@ -105,19 +105,19 @@ def _run_analysis(nutrition_data: NutritionData) -> None:
 
 def _step(num: int, label: str, sub: str = "") -> None:
     sub_html = (
-        f'<span style="font-weight:400;color:#555;font-size:0.8rem;"> — {sub}</span>'
+        f'<span style="font-weight:400;opacity:0.6;font-size:0.8rem;"> — {sub}</span>'
         if sub else ""
     )
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;
-                background:linear-gradient(90deg,#E8F5E9,transparent);
-                border-left:4px solid #2E7D32;border-radius:0 9px 9px 0;
+                background:rgba(128,128,128,0.08);
+                border-left:3px solid #4CAF50;border-radius:0 8px 8px 0;
                 margin:1rem 0 0.5rem;">
-        <div style="width:26px;height:26px;background:#2E7D32;color:white;
+        <div style="width:24px;height:24px;background:#4CAF50;color:white;
                     border-radius:50%;display:flex;align-items:center;
-                    justify-content:center;font-size:12px;font-weight:800;
+                    justify-content:center;font-size:11px;font-weight:800;
                     flex-shrink:0;">{num}</div>
-        <span style="font-weight:700;font-size:0.9rem;color:#1B5E20;">{label}</span>{sub_html}
+        <span style="font-weight:700;font-size:0.88rem;">{label}</span>{sub_html}
     </div>""", unsafe_allow_html=True)
 
 
@@ -140,7 +140,7 @@ def _render_food_table(foods: list[dict]) -> list[dict]:
     # Column headers
     st.markdown("""
     <div style="display:grid;grid-template-columns:0.5fr 3fr 2fr 1.5fr 0.5fr;
-                gap:6px;padding:5px 10px 5px 6px;background:#F0F7F0;
+                gap:6px;padding:5px 10px 5px 6px;background:rgba(128,128,128,0.04);
                 border-radius:8px 8px 0 0;margin-bottom:1px;">
         <div style="font-size:0.7rem;font-weight:700;color:#2E7D32;
                     letter-spacing:0.5px;text-transform:uppercase;"></div>
@@ -195,8 +195,8 @@ def render_snap_tab():
     """Main entry point for the Snap Food tab."""
     st.markdown("""
     <div style="margin-bottom:0.5rem;">
-        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">🍔 Snap Food</div>
-        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+        <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;">🍔 Snap Food</div>
+        <div style="font-size:0.85rem;color:inherit;opacity:0.7;margin-top:2px;">
             Photograph your meal — AI identifies each food and estimates portions
             for a full nutrition breakdown.
         </div>
@@ -229,11 +229,11 @@ def render_snap_tab():
         with col_action:
             if st.session_state.snap_file_key != file_key:
                 st.markdown("""
-                <div style="background:#F9FDF9;border:1px solid #C8E6C9;
+                <div style="background:rgba(128,128,128,0.06);border:1px solid rgba(46,125,50,0.2);
                             border-radius:12px;padding:1rem;margin-top:0.5rem;">
-                    <div style="font-weight:700;color:#1B5E20;font-size:0.9rem;
+                    <div style="font-weight:700;color:#4CAF50;font-size:0.9rem;
                                 margin-bottom:4px;">📸 Photo ready</div>
-                    <div style="font-size:0.8rem;color:#666;line-height:1.5;">
+                    <div style="font-size:0.8rem;color:inherit;opacity:0.7;line-height:1.5;">
                         Click <strong>Identify Food</strong> to detect items
                         and estimate portions automatically.
                     </div>
@@ -258,11 +258,11 @@ def render_snap_tab():
             else:
                 n = len(st.session_state.snap_identified_foods)
                 st.markdown(f"""
-                <div style="background:#E8F5E9;border:1px solid #66BB6A;
+                <div style="background:rgba(46,125,50,0.12);border:1px solid #66BB6A;
                             border-radius:12px;padding:0.9rem 1rem;
                             margin-top:0.5rem;text-align:center;">
                     <div style="font-size:1.6rem;">✅</div>
-                    <div style="font-weight:700;color:#1B5E20;font-size:0.9rem;">
+                    <div style="font-weight:700;color:#4CAF50;font-size:0.9rem;">
                         {n} item{"s" if n != 1 else ""} identified
                     </div>
                 </div>""", unsafe_allow_html=True)
@@ -294,8 +294,8 @@ def render_snap_tab():
 
     if not foods:
         st.markdown("""
-        <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:12px;
-                    padding:1.25rem;color:#888;text-align:center;font-size:0.87rem;">
+        <div style="background:rgba(128,128,128,0.06);border:1px dashed rgba(46,125,50,0.2);border-radius:12px;
+                    padding:1.25rem;color:inherit;opacity:0.5;text-align:center;font-size:0.87rem;">
             No foods identified yet. Use <strong>Identify Food</strong> above
             or add items manually.
         </div>""", unsafe_allow_html=True)
@@ -307,7 +307,7 @@ def render_snap_tab():
         total_g = sum(f.get("estimated_grams") or 0 for f in updated_foods)
         st.markdown(f"""
         <div style="display:flex;justify-content:space-between;align-items:center;
-                    background:#F9FDF9;border:1px solid #C8E6C9;border-radius:0 0 8px 8px;
+                    background:rgba(128,128,128,0.06);border:1px solid rgba(46,125,50,0.2);border-radius:0 0 8px 8px;
                     padding:6px 12px;margin-top:1px;margin-bottom:2px;">
             <span style="font-size:0.8rem;color:#6A8A6A;font-style:italic;">
                 ⚡ Portions are AI-estimated — adjust if needed for accuracy.

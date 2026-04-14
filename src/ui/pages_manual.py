@@ -38,8 +38,8 @@ def render_manual_tab():
     """Main entry point for the Manual Entry tab."""
     st.markdown("""
     <div style="margin-bottom:0.75rem;">
-        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">✏️ Manual Entry</div>
-        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+        <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;">✏️ Manual Entry</div>
+        <div style="font-size:0.85rem;color:inherit;opacity:0.7;margin-top:2px;">
             Enter nutrition values by hand — useful when you have a label in front of you
             or the scanner couldn't read it clearly.
         </div>
@@ -47,10 +47,10 @@ def render_manual_tab():
 
     # Quick-start tip card
     st.markdown("""
-    <div style="background:#E8F5E9;border-radius:12px;padding:0.8rem 1.1rem;
+    <div style="background:rgba(46,125,50,0.12);border-radius:12px;padding:0.8rem 1.1rem;
                 margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;">
         <span style="font-size:1.2rem;flex-shrink:0;">💡</span>
-        <div style="font-size:0.84rem;color:#1B5E20;line-height:1.55;">
+        <div style="font-size:0.84rem;color:#4CAF50;line-height:1.55;">
             <strong>Tip:</strong> Fill in as many fields as you have — unknown values can stay at 0.
             The AI analysis works best with calories, sodium, fat, and ingredients.
         </div>

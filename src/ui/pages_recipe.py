@@ -202,11 +202,11 @@ def _render_pantry_display():
     st.markdown(f"""
     <div style="display:flex;align-items:center;justify-content:space-between;
                 padding:0.4rem 0;margin:0.5rem 0 0.6rem;
-                border-bottom:2px solid #C8E6C9;">
+                border-bottom:2px solid rgba(46,125,50,0.2);">
         <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:1rem;">🧺</span>
-            <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">Your Pantry</span>
-            <span style="background:#E8F5E9;color:#2E7D32;padding:1px 10px;
+            <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">Your Pantry</span>
+            <span style="background:rgba(46,125,50,0.12);color:#2E7D32;padding:1px 10px;
                          border-radius:100px;font-size:0.75rem;font-weight:700;">
                 {len(items)} item{"s" if len(items) != 1 else ""}
             </span>
@@ -215,8 +215,8 @@ def _render_pantry_display():
 
     if not items:
         st.markdown("""
-        <div style="background:#F9FDF9;border:1px dashed #C8E6C9;border-radius:12px;
-                    padding:1.5rem;color:#888;text-align:center;font-size:0.87rem;">
+        <div style="background:rgba(128,128,128,0.06);border:1px dashed #C8E6C9;border-radius:12px;
+                    padding:1.5rem;color:inherit;opacity:0.5;text-align:center;font-size:0.87rem;">
             <div style="font-size:1.8rem;margin-bottom:0.4rem;">🧺</div>
             Add ingredients above to start building your pantry.
         </div>""", unsafe_allow_html=True)
@@ -232,13 +232,13 @@ def _render_pantry_display():
             )
         with col_name:
             st.markdown(
-                f'<div style="font-weight:700;font-size:0.9rem;color:#1A2E1A;'
+                f'<div style="font-weight:700;font-size:0.9rem;color:inherit;'
                 f'padding:6px 0;">{item.name}</div>',
                 unsafe_allow_html=True,
             )
         with col_qty:
             st.markdown(
-                f'<div style="font-size:0.85rem;color:#555;padding:6px 0;">'
+                f'<div style="font-size:0.85rem;color:inherit;opacity:0.7;padding:6px 0;">'
                 f'{item.quantity or "—"}</div>',
                 unsafe_allow_html=True,
             )
@@ -266,7 +266,7 @@ def _render_recipe_generation():
     if len(items) < 2:
         if items:
             st.markdown("""
-            <div style="background:#FFF8E1;border:1px solid #FFB300;border-radius:10px;
+            <div style="background:rgba(255,179,0,0.1);border:1px solid #FFB300;border-radius:10px;
                         padding:0.75rem 1rem;color:#E65100;font-size:0.87rem;">
                 ⚠️ Add at least <strong>2 ingredients</strong> to generate a recipe.
             </div>""", unsafe_allow_html=True)
@@ -274,9 +274,9 @@ def _render_recipe_generation():
 
     st.markdown("""
     <div style="display:flex;align-items:center;gap:8px;padding:0.35rem 0;
-                margin-bottom:0.75rem;border-bottom:2px solid #C8E6C9;">
+                margin-bottom:0.75rem;border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">🍳</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">Generate Recipe</span>
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">Generate Recipe</span>
     </div>""", unsafe_allow_html=True)
 
     col_gen, col_regen = st.columns(2)
@@ -337,8 +337,8 @@ def _render_recipe_generation():
 
     with col_ing:
         st.markdown("""
-        <div style="font-weight:700;font-size:0.92rem;color:#1B5E20;
-                    padding:0.35rem 0;border-bottom:2px solid #C8E6C9;
+        <div style="font-weight:700;font-size:0.92rem;color:#4CAF50;
+                    padding:0.35rem 0;border-bottom:2px solid rgba(46,125,50,0.2);
                     margin-bottom:0.65rem;">
             🧺 Ingredients Used
         </div>""", unsafe_allow_html=True)
@@ -348,7 +348,7 @@ def _render_recipe_generation():
             <div style="display:flex;align-items:flex-start;gap:8px;
                         padding:5px 0;border-bottom:1px solid #F0F7F0;">
                 <span style="font-size:1rem;flex-shrink:0;">{em}</span>
-                <span style="font-size:0.87rem;color:#333;">{ing}</span>
+                <span style="font-size:0.87rem;color:inherit;">{ing}</span>
             </div>""", unsafe_allow_html=True)
 
         if recipe.additional_ingredients_needed:
@@ -364,13 +364,13 @@ def _render_recipe_generation():
                 <div style="display:flex;align-items:flex-start;gap:8px;
                             padding:5px 0;border-bottom:1px solid #FFF8F0;">
                     <span style="font-size:1rem;flex-shrink:0;">{em}</span>
-                    <span style="font-size:0.87rem;color:#555;">{ing}</span>
+                    <span style="font-size:0.87rem;color:inherit;opacity:0.7;">{ing}</span>
                 </div>""", unsafe_allow_html=True)
 
     with col_inst:
         st.markdown("""
-        <div style="font-weight:700;font-size:0.92rem;color:#1B5E20;
-                    padding:0.35rem 0;border-bottom:2px solid #C8E6C9;
+        <div style="font-weight:700;font-size:0.92rem;color:#4CAF50;
+                    padding:0.35rem 0;border-bottom:2px solid rgba(46,125,50,0.2);
                     margin-bottom:0.65rem;">
             📋 Instructions
         </div>""", unsafe_allow_html=True)
@@ -382,14 +382,14 @@ def _render_recipe_generation():
                             border-radius:50%;display:flex;align-items:center;
                             justify-content:center;font-size:11px;font-weight:800;
                             flex-shrink:0;margin-top:2px;">{j}</div>
-                <div style="font-size:0.87rem;color:#333;line-height:1.55;">{step}</div>
+                <div style="font-size:0.87rem;color:inherit;line-height:1.55;">{step}</div>
             </div>""", unsafe_allow_html=True)
 
     # ── Nutrition breakdown ───────────────────────────────────────────────────
     if recipe.estimated_nutrition:
         st.markdown("""
-        <div style="font-weight:700;font-size:0.92rem;color:#1B5E20;
-                    padding:0.35rem 0;border-bottom:2px solid #C8E6C9;
+        <div style="font-weight:700;font-size:0.92rem;color:#4CAF50;
+                    padding:0.35rem 0;border-bottom:2px solid rgba(46,125,50,0.2);
                     margin:1.25rem 0 0.75rem;">
             📊 Estimated Nutrition (per serving)
         </div>""", unsafe_allow_html=True)
@@ -407,14 +407,14 @@ def _render_recipe_generation():
             f'<strong>{h}</strong>' for h in recipe.nutrition_highlights
         )
         st.markdown(f"""
-        <div style="background:#E8F5E9;border-radius:10px;padding:0.65rem 1rem;
-                    font-size:0.85rem;color:#1B5E20;margin-top:0.5rem;">
+        <div style="background:rgba(46,125,50,0.12);border-radius:10px;padding:0.65rem 1rem;
+                    font-size:0.85rem;color:#4CAF50;margin-top:0.5rem;">
             🌟 <strong>Highlights:</strong> {chips}
         </div>""", unsafe_allow_html=True)
 
     if recipe.tips:
         st.markdown(f"""
-        <div style="background:#FFF8E1;border-left:4px solid #FFB300;
+        <div style="background:rgba(255,179,0,0.1);border-left:4px solid #FFB300;
                     border-radius:0 10px 10px 0;padding:0.7rem 1rem;
                     font-size:0.87rem;color:#E65100;margin-top:0.6rem;">
             💡 <strong>Tip:</strong> {recipe.tips}
@@ -427,8 +427,8 @@ def render_recipe_tab():
     """Main entry point for the Recipe Generator tab."""
     st.markdown("""
     <div style="margin-bottom:0.5rem;">
-        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">🍳 Recipe Generator</div>
-        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+        <div style="font-size:1.25rem;font-weight:800;color:#4CAF50;">🍳 Recipe Generator</div>
+        <div style="font-size:0.85rem;color:inherit;opacity:0.7;margin-top:2px;">
             Add ingredients from label scans or photos, then generate a nutritious recipe
             from what you have — great for making the most of limited pantry items.
         </div>
@@ -438,9 +438,9 @@ def render_recipe_tab():
 
     st.markdown("""
     <div style="display:flex;align-items:center;gap:8px;padding:0.35rem 0;
-                margin-bottom:0.6rem;border-bottom:2px solid #C8E6C9;">
+                margin-bottom:0.6rem;border-bottom:2px solid rgba(46,125,50,0.2);">
         <span style="font-size:1rem;">➕</span>
-        <span style="font-weight:700;font-size:0.95rem;color:#1B5E20;">Add Ingredients</span>
+        <span style="font-weight:700;font-size:0.95rem;color:#4CAF50;">Add Ingredients</span>
     </div>""", unsafe_allow_html=True)
 
     _render_pantry_builder()
