@@ -331,8 +331,8 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
 > Goal: Research talk with recorded video walkthrough of the app. No live demo needed.
 
 - [ ] **7.1 App Polish**
-  - [ ] 7.1.1 Clean up Streamlit styling (page title, icon, colors)
-  - [ ] 7.1.2 Add brief app description/instructions on main page
+  - [x] 7.1.1 Clean up Streamlit styling (page title, icon, colors)
+  - [x] 7.1.2 Add brief app description/instructions on main page
   - [ ] 7.1.3 Final error handling pass — no tracebacks during video recording
   - [ ] 7.1.4 Write `README.md` — project overview, features, tech stack, setup instructions (venv, `.env` keys, `streamlit run app.py`), screenshots or video link, credits to Aarav/Neil/Nuv + Dataception/Purdue. Do this as early as possible so the repo is presentable to judges/teammates ahead of polish.
 
@@ -380,11 +380,11 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 
 | Person | Phase 1-2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 |
 |--------|-----------|---------|---------|---------|---------|---------|
-| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | Phase 7 shared |
-| **Nuv**   | — | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | ✅ 6.4 Find Free Food tab UI | Phase 7 shared |
+| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | ✅ 7.1.1 / 7.1.2 theme-adaptive dark mode polish, scroll fix, toast notifications |
+| **Nuv**   | — | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | ✅ 6.4 Find Free Food tab UI | ✅ 7.1.1 comprehensive UI overhaul (CSS theme, grade badges, styled cards, recipe layout) |
 | **Neil**  | — | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | ✅ 6.1 Nutrient gap analysis · ✅ 6.2 Local resource lookup + curated Lafayette list · ✅ 6.3 LLM recommendation layer | Phase 7 shared |
 
-### Completed Work Log (as of 2026-04-11)
+### Completed Work Log (as of 2026-04-14)
 
 **Aarav**
 - Project planning: authored the full CLAUDE.md build plan (phases, subtasks, task division, tech-stack decisions, timelines)
@@ -401,6 +401,7 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 - Vision-based label reader (`src/vision/label_reader.py`): replaced Tesseract for Upload Label + Recipe "Add from Label" flows. Groq vision system/user prompts, base64 image encoding, strict NutritionData JSON schema with unit conversion and "<1g"→0.5 rules, Tesseract fallback chain. Added `.heic`/`.heif`/`.webp` to the file_uploader allow-list plus `pillow-heif` registration so iPhone photos open natively. Preprocessor improvements kept as fallback: EXIF orientation via `ImageOps.exif_transpose`, normalize width to 1600px, adaptive threshold block=25/C=2. Extractor cleanup heuristics (letter-to-digit OCR fixups, loose `incl\w*` / `[il1]ron` / `[m\s]*g?` patterns, optional trailing g, multi-group alternation for modern "Includes Xg Added Sugars") as safety net for the fallback path
 - 80/80 tests passing across the Phase 4 work
 - Phase 5.1 LLM Evaluation: 5 realistic test cases in `eval/llm_test_cases.py` covering clean-pass, allergen detection, preservative flagging, goal conflict, and multi-issue cascade. Runner + scorer in `eval/llm_accuracy.py` uses case-insensitive substring matching against AnalysisResult fields (concept capture, not exact wording), regenerates `eval/llm_accuracy_report.md` and optional JSON dump on every run. Results: 29/30 checks passed (96.7%) — all four core prompt dimensions (allergen, preservative, nutrient, goal) scored 100%; single miss was the LLM rating a preservative-heavy 1-oz chip serving as `low` risk vs expected `moderate`/`high` (defensible per-serving interpretation, test case left unchanged to keep the number honest)
+- Phase 7.1.1 + 7.1.2 UI Polish: comprehensive theme overhaul across `app.py` and all 7 `src/ui/` page files. Replaced ~60 hardcoded light-mode colors (`#1B5E20`, `#444`, `#666`, `background:white`, `#F9FDF9`, `#E8F5E9`) with theme-adaptive `rgba()` values so both Streamlit light and dark modes render correctly. Added `.streamlit/config.toml` locking dark theme (`backgroundColor=#0E1117`, `primaryColor=#4CAF50`). Killed Streamlit's default red tab underline and red hover accent — all interactive states now use green (`#4CAF50` / `#66BB6A`). Compacted hero header to single-line dark forest gradient with green accent text. Removed fake feature pills from header that looked like duplicate navigation. Collapsed sidebar: removed heavy green gradient background, moved allergens/goals/restrictions into "Edit Profile Settings" expander, replaced avatar with branded icon. Added JS fix to prevent `st.number_input` scroll-hijacking (Manual Entry tab was freezing on scroll). Replaced `st.success` with `st.toast` for pantry add/remove actions. Condensed "How to use" 3-column docs into a lightweight "Quick tips" expander. Step indicators use flat backgrounds instead of dated gradients. Serving/Calories row consolidated to 3-column layout. Demo zip button moved inline with search bar on Find Free Food tab.
 
 **Nuv**
 - Phase 3.3.1: `search_food` + `check_preservatives`
@@ -412,6 +413,7 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 - Phase 3.4.4: Snap Food page scaffold (camera + upload, editable food table, pipeline wiring)
 - Wired up all five tabs in `app.py`
 - Phase 6.4: Find Free Food Near You tab UI (`src/ui/pages_find.py`) — zip code input + resource-type filter, nutrient gap summary with colorized metrics (red <10%, yellow <25%), resource cards with address/hours/eligibility, "Get Personalized Advice" button calling `GroqClient.recommend_resources()`, session state for `find_resources` / `find_advice` / `find_zip`. Wired as 5th tab in `app.py`.
+- Phase 7.1 UI Overhaul (initial): comprehensive visual redesign across `app.py` and all `src/ui/` page files. Global CSS theme with dark green gradient sidebar, caloric gauge, gradient hero banner with feature badges, collapsible How-to Guide, pill tab bar, gradient primary buttons, styled expanders/forms/alerts/inputs. Results page: A+→F nutritional grade badge, 4-tile quick-stats row (grade, allergens, goals met, total flags), custom HTML progress bar chart grouped into Macronutrients/Micronutrients, color-coded flag cards and recommendation tiles. Snap Food: food emoji mapping, confidence pills, editable food table with inline delete, AI-estimated portion disclaimer. Recipe Generator: food emoji mapping, source badges (Label/Photo/Manual), recipe card with green gradient header, two-column ingredients/instructions layout, download-as-text, nutrition highlights and tips. Find Free Food: color-coded resource cards per type (food bank, pantry, meal program, SNAP/WIC, garden, market), nutrient gap cards with progress bars and food suggestions, LLM advice tiles. Components: caloric gauge bar, Active Profile summary card, Clear Profile button, color-coded section headers in nutrition editor.
 
 **Neil**
 - Phase 3.1.1 preprocessor (`src/ocr/preprocessor.py`): PIL/path/numpy loader, grayscale, upscale, adaptive threshold, Gaussian blur
