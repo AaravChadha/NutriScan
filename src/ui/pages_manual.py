@@ -16,13 +16,7 @@ def _init_session_state():
 
 
 def _run_analysis(nutrition_data: NutritionData) -> None:
-    """Compute DV% and call LLM analyze(). Stores results in session_state.
-
-    GroqClient.analyze() handles its own API/JSON errors via st.error and
-    returns an empty AnalysisResult on failure, so the only exceptions we
-    need to catch here are client construction failures (e.g. missing
-    GROQ_API_KEY).
-    """
+    """Compute DV% and call LLM analyze(). Stores results in session_state."""
     health_profile = st.session_state.get("health_profile", HealthProfile())
     dv = compute_dv_percentages(nutrition_data)
 
@@ -42,33 +36,43 @@ def _run_analysis(nutrition_data: NutritionData) -> None:
 
 def render_manual_tab():
     """Main entry point for the Manual Entry tab."""
-    st.header("Manual Entry")
-    st.caption(
-        "Enter nutrition information by hand — useful when you have a label "
-        "in front of you or the scanner couldn't read it."
-    )
+    st.markdown("""
+    <div style="margin-bottom:0.75rem;">
+        <div style="font-size:1.25rem;font-weight:800;color:#1B5E20;">✏️ Manual Entry</div>
+        <div style="font-size:0.85rem;color:#666;margin-top:2px;">
+            Enter nutrition values by hand — useful when you have a label in front of you
+            or the scanner couldn't read it clearly.
+        </div>
+    </div>""", unsafe_allow_html=True)
+
+    # Quick-start tip card
+    st.markdown("""
+    <div style="background:#E8F5E9;border-radius:12px;padding:0.8rem 1.1rem;
+                margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:1.2rem;flex-shrink:0;">💡</span>
+        <div style="font-size:0.84rem;color:#1B5E20;line-height:1.55;">
+            <strong>Tip:</strong> Fill in as many fields as you have — unknown values can stay at 0.
+            The AI analysis works best with calories, sodium, fat, and ingredients.
+        </div>
+    </div>""", unsafe_allow_html=True)
 
     _init_session_state()
 
-    # Always start from an empty NutritionData for fresh entry
     empty = NutritionData()
     confirmed = nutrition_editor(empty, key_prefix="manual")
 
-    # nutrition_editor returns a new object on form submit
     if confirmed is not empty:
         st.session_state.manual_result = None
         st.session_state.manual_dv = {}
-        with st.spinner("Analyzing..."):
+        with st.spinner("🧠 Analyzing nutrition..."):
             _run_analysis(confirmed)
 
     if st.session_state.manual_result is not None:
         st.divider()
         results_display(st.session_state.manual_result, st.session_state.manual_dv)
     elif st.session_state.manual_dv:
-        # LLM not ready yet but DV% is available
-        st.divider()
-        st.subheader("% Daily Value Breakdown")
         import pandas as pd
+        st.divider()
         labels = {
             "calories": "Calories", "total_fat": "Total Fat",
             "saturated_fat": "Saturated Fat", "cholesterol": "Cholesterol",
