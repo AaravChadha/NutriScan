@@ -356,31 +356,25 @@ System dependency: `brew install tesseract` (macOS) / `apt install tesseract-ocr
   - [x] 7.4.1 Problem statement — food insecurity + nutrition literacy gap
   - [x] 7.4.2 Solution overview — NutriScan's 5 features (label scan, food snap, manual entry, recipe generator, free local resources)
   - [x] 7.4.3 Technical architecture slide — Groq Vision (label reading + food photo identification), Groq LLM (analysis + recipe generation), USDA FoodData Central + Open Food Facts (nutrition lookups), Tesseract OCR as offline fallback
-  - [x] 7.4.4 Evaluation results (LLM checklist scores; vision-vs-OCR comparison if 7.6 is done)
+  - [x] 7.4.4 Evaluation results (LLM checklist scores)
   - [x] 7.4.5 Embed or link video walkthrough
   - [x] 7.4.6 Future work — expanded local resources, multi-language support, mobile app
   - [x] 7.4.7 Practice talk (aim for ~10 min depending on symposium format)
 
-- [ ] **7.5 Day-of Checklist** `April 16`
-  - [ ] 7.5.1 Slides exported/uploaded and accessible
-  - [ ] 7.5.2 Video plays correctly from slides
-  - [ ] 7.5.3 Backup: have app running on laptop in case of Q&A ("can you show me X?")
-
-- [ ] **7.6 Stretch — Vision vs OCR Comparison** (only if Phase 7.1-7.5 are done with time to spare)
-  > Optional talking point: show the engineering pivot from Tesseract OCR to Groq vision for label reading. One slide, ~30s of talk time.
-  - [ ] 7.6.1 Hand-label ground truth for the 4 photos already in `tests/sample_labels/` (fda_2014, agave_nectar, monster_energy, iphone_test) in `eval/ground_truth.json`
-  - [ ] 7.6.2 Write `eval/label_reader_accuracy.py` — runs both paths (vision via `extract_label_with_vision`, OCR fallback via `extract`) on each image, prints a side-by-side field-extraction table
-  - [ ] 7.6.3 Add one comparison slide to the deck: table + one-line narrative ("vision was 8-10× more accurate on real phone photos, which is why we made it the primary path")
+- [x] **7.5 Day-of Checklist** `April 16`
+  - [x] 7.5.1 Slides exported/uploaded and accessible
+  - [x] 7.5.2 Video plays correctly from slides
+  - [x] 7.5.3 Backup: have app running on laptop in case of Q&A ("can you show me X?")
 
 ---
 
 ## Task Division
 
-All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining shared work.
+All phases complete as of 2026-04-16 (symposium day).
 
 | Person | Phase 1-2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 | Phase 7 |
 |--------|-----------|---------|---------|---------|---------|---------|
-| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | ✅ 7.1.1 / 7.1.2 theme-adaptive dark mode polish · ✅ 7.1.3 final error-handling pass (vision MIME/HEIC, DV% rendering, Snap Food float confidence, katsu-vs-sushi prompt, Find Free Food dark-mode contrast) · ✅ 7.1.4 README.md · ✅ 7.2 / 7.3 video walkthrough scenarios + recording · ✅ 7.4 presentation slides (content, architecture, eval, video embedding, future work) |
+| **Aarav** | ✅ project planning & CLAUDE.md build plan · ✅ scaffolding, data models, FDA DV% | ✅ 3.1.3 real-image OCR validation + regex bugfixes · ✅ 3.2 LLM Integration · ✅ 3.3.1.5 OFF fallback · ✅ 3.3.5 / 3.3.6 / 3.4.4 cleanup · ✅ 3.4 Food Photo Recognition · ✅ 3.5 Recipe Generator | ✅ 4.1 pipeline wire-up · ✅ 4.2 UX verification · ✅ 4.3 error handling · ✅ vision-based label reader | ✅ 5.1 LLM eval (29/30, 96.7%) | — | ✅ 7.1.1 / 7.1.2 theme-adaptive dark mode polish · ✅ 7.1.3 final error-handling pass (vision MIME/HEIC, DV% rendering, Snap Food float confidence, katsu-vs-sushi prompt, Find Free Food dark-mode contrast) · ✅ 7.1.4 README.md · ✅ 7.2 / 7.3 video walkthrough scenarios + recording · ✅ 7.4 presentation slides (content, architecture, eval, video embedding, future work) · ✅ 7.5 day-of checklist (script written, slides/video ready, laptop backup) |
 | **Nuv**   | — | ✅ 3.3.1 USDA scaffold · ✅ 3.3.2 Health Profile form · ✅ 3.3.3 Nutrition Editor · ✅ 3.3.4 Results Display · ✅ 3.3.5 Upload Label page scaffold · ✅ 3.3.6 Manual Entry page scaffold · ✅ 3.4.4 Snap Food page scaffold · ✅ app.py tab wiring | — | — | ✅ 6.4 Find Free Food tab UI | ✅ 7.1.1 comprehensive UI overhaul (CSS theme, grade badges, styled cards, recipe layout) · ✅ 7.4 slide design/visual polish |
 | **Neil**  | — | ✅ 3.1.1 preprocessor · ✅ 3.1.2 extractor + regex · ✅ 3.1.3.3 / 3.1.3.4 hardcoded-string tests | — | — | ✅ 6.1 Nutrient gap analysis · ✅ 6.2 Local resource lookup + curated Lafayette list · ✅ 6.3 LLM recommendation layer | — |
 
@@ -405,6 +399,7 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 - Phase 7.1.3 Final error-handling pass (pre-video recording): (1) Vision pipeline — detect image MIME type from magic bytes (PNG/WEBP/JPEG) instead of hardcoding `image/jpeg`, re-encode HEIC/HEIF and unknown formats to JPEG via Pillow so Groq's vision API accepts iPhone photos (fixed "invalid image data" 400 error); added `pillow_heif.register_heif_opener()` to both `label_reader.py` and `food_identifier.py` so HEIC bytes can be decoded for re-encoding. (2) Results DV% rendering — split the single oversized `_render_dv_bars` `st.markdown` call into separate calls for Macros / Micronutrients / Legend (Streamlit was dumping the inner nested HTML as raw text when passed as one block), escaped `%` as `&#37;` to avoid LaTeX-like rendering, replaced complex legend HTML with a simple `st.caption`. (3) Snap Food confidence pill — `_conf_pill` now accepts both float (0.0–1.0 from vision model) and string confidence, bucketing floats into high/medium/low tiers (fixed `AttributeError: 'float' object has no attribute 'lower'`). (4) Prompt disambiguation — added katsu-vs-sushi rule to `build_vision_system_prompt` with visual tells (nori wrapper, breaded crust, sauce consistency, slice arrangement) so sliced chicken cutlets on rice aren't misidentified as maki rolls. (5) Find Free Food dark-mode — use `_TYPE_COLORS` `text_color` (was being discarded as `_`) for resource card text and food suggestion chips so copy stays readable on the forced-light card backgrounds in dark mode; split resource cards into separate `st.markdown` calls (main body / website link / notes) to prevent Streamlit dropping nested HTML as raw text. (6) Recipe Generator — enabled `accept_multiple_files=True` on both label scan and snap food uploaders so users can batch-add pantry items; loops through each file with per-upload error isolation, summary toasts, and low-confidence warnings.
 - Phase 7.2 / 7.3 Video walkthrough: recorded all 9 scenarios (clean label, allergen detection, goal mismatch, preservative warnings, food snap analysis, high-protein recipe, food-insecurity recipe, nutrient gap → local resources, allergen-safe recipe), edited into cohesive walkthrough, added voiceover/captions.
 - Phase 7.4 Presentation slides: authored all slide content — problem statement, solution overview (5 features), technical architecture, eval results, video embedding, future work. Practiced talk for symposium timing.
+- Phase 7.5 Day-of checklist: wrote presentation script, confirmed slides exported and accessible, verified video plays from deck, laptop backup ready for Q&A.
 
 **Nuv**
 - Phase 3.3.1: `search_food` + `check_preservatives`
@@ -432,6 +427,6 @@ All Phase 1-6 work is complete. Phase 7 (presentation + video) is the remaining 
 ## Verification Summary
 - **Unit tests:** OCR parsing, DV% math, prompt construction, response parsing, recipe generation (`pytest tests/`)
 - **Integration tests (manual):** Clear photo, blurry photo, food snap, allergen scenario, diet goal scenario, empty profile, recipe from pantry, free resource lookup
-- **Evaluation:** LLM checklist on 5 test cases (Phase 5.1); vision food ID spot checks; recipe quality spot checks; optional vision-vs-OCR comparison as a stretch slide (Phase 7.6)
+- **Evaluation:** LLM checklist on 5 test cases (Phase 5.1); vision food ID spot checks; recipe quality spot checks
 - **Video recording:** Run all 9 walkthrough scenarios (Phase 7.2) and screen record before April 16
 - **Pre-talk check:** Slides + video ready, app running as backup for Q&A
