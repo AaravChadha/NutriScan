@@ -101,77 +101,97 @@ def _render_pantry_builder():
     tab_label, tab_photo, tab_manual = st.tabs(["📷 Scan a Label", "🍽️ Snap Food", "✏️ Add Manually"])
 
     with tab_label:
-        uploaded_label = st.file_uploader(
-            "Upload nutrition label",
+        uploaded_labels = st.file_uploader(
+            "Upload nutrition label(s) — select multiple photos at once",
             type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
             key="recipe_label_upload",
+            accept_multiple_files=True,
         )
-        if uploaded_label and st.button("Add from Label", key="add_label",
-                                        use_container_width=True, type="primary"):
-            try:
-                from src.vision.label_reader import extract_label_with_vision
-                uploaded_label.seek(0)
-                image_bytes = uploaded_label.read()
-                uploaded_label.seek(0)
-                nutrition = None
-                vision_result = extract_label_with_vision(image_bytes)
-                if vision_result is not None and vision_result.fields_parsed > 0:
-                    nutrition = vision_result.nutrition
-                    if vision_result.confidence < 0.5:
-                        st.warning(
-                            f"Vision read {vision_result.fields_parsed} field(s) — "
-                            "item added but values may be incomplete."
+        n = len(uploaded_labels) if uploaded_labels else 0
+        btn_label = f"Add {n} Label{'s' if n != 1 else ''}" if n else "Add from Label"
+        if uploaded_labels and st.button(btn_label, key="add_label",
+                                         use_container_width=True, type="primary"):
+            from src.vision.label_reader import extract_label_with_vision
+            from PIL import Image
+            from src.ocr.extractor import extract
+            added = 0
+            failed = 0
+            low_conf = 0
+            with st.spinner(f"🔍 Reading {n} label(s)..."):
+                for uploaded_label in uploaded_labels:
+                    try:
+                        uploaded_label.seek(0)
+                        image_bytes = uploaded_label.read()
+                        uploaded_label.seek(0)
+                        nutrition = None
+                        vision_result = extract_label_with_vision(image_bytes)
+                        if vision_result is not None and vision_result.fields_parsed > 0:
+                            nutrition = vision_result.nutrition
+                            if vision_result.confidence < 0.5:
+                                low_conf += 1
+                        else:
+                            uploaded_label.seek(0)
+                            image = Image.open(uploaded_label).convert("RGB")
+                            ocr_result = extract(image)
+                            uploaded_label.seek(0)
+                            nutrition = ocr_result.nutrition
+                            if ocr_result.confidence == "low":
+                                low_conf += 1
+                        item = PantryItem(
+                            name=uploaded_label.name.rsplit(".", 1)[0] or "Scanned Item",
+                            source="label_scan",
+                            nutrition=nutrition,
+                            quantity="1 serving",
                         )
-                else:
-                    from PIL import Image
-                    from src.ocr.extractor import extract
-                    uploaded_label.seek(0)
-                    image = Image.open(uploaded_label).convert("RGB")
-                    ocr_result = extract(image)
-                    uploaded_label.seek(0)
-                    nutrition = ocr_result.nutrition
-                    if ocr_result.confidence == "low":
-                        st.warning(
-                            f"OCR read {ocr_result.fields_parsed} field(s) — "
-                            "item added but data may be sparse."
-                        )
-                item = PantryItem(
-                    name="Scanned Item",
-                    source="label_scan",
-                    nutrition=nutrition,
-                    quantity="1 serving",
-                )
-                st.session_state.pantry_items.append(item)
-                st.toast(f"Added: {item.name}", icon="✅")
+                        st.session_state.pantry_items.append(item)
+                        added += 1
+                    except Exception:
+                        failed += 1
+            if added:
+                st.toast(f"Added {added} label{'s' if added != 1 else ''}", icon="✅")
+            if low_conf:
+                st.warning(f"{low_conf} label(s) had low confidence — review values before generating a recipe.")
+            if failed:
+                st.error(f"{failed} label(s) failed to read. Try manual entry for those.")
+            if added:
                 st.rerun()
-            except Exception as e:
-                st.error(f"Label reading failed: {e}. Try manual entry instead.")
 
     with tab_photo:
-        food_photo = st.file_uploader(
-            "Upload food photo",
+        food_photos = st.file_uploader(
+            "Upload food photo(s) — select multiple photos at once",
             type=["jpg", "jpeg", "png", "heic", "heif", "webp"],
             key="recipe_food_upload",
+            accept_multiple_files=True,
         )
-        if food_photo and st.button("Identify & Add", key="add_photo",
-                                    use_container_width=True, type="primary"):
-            try:
-                from src.vision.food_identifier import identify_food
-                with st.spinner("🧠 Identifying food items..."):
-                    foods = identify_food(food_photo.getvalue())
-                for f in foods:
-                    grams = f.get("estimated_grams")
-                    item = PantryItem(
-                        name=f["name"],
-                        source="photo_id",
-                        estimated_grams=grams,
-                        quantity=f"{grams}g" if grams else "",
-                    )
-                    st.session_state.pantry_items.append(item)
-                st.toast(f"Added {len(foods)} item(s) from photo", icon="✅")
+        n = len(food_photos) if food_photos else 0
+        btn_label = f"Identify & Add from {n} Photo{'s' if n != 1 else ''}" if n else "Identify & Add"
+        if food_photos and st.button(btn_label, key="add_photo",
+                                     use_container_width=True, type="primary"):
+            from src.vision.food_identifier import identify_food
+            total_added = 0
+            failed = 0
+            with st.spinner(f"🧠 Identifying food items in {n} photo(s)..."):
+                for food_photo in food_photos:
+                    try:
+                        foods = identify_food(food_photo.getvalue())
+                        for f in foods:
+                            grams = f.get("estimated_grams")
+                            item = PantryItem(
+                                name=f["name"],
+                                source="photo_id",
+                                estimated_grams=grams,
+                                quantity=f"{grams}g" if grams else "",
+                            )
+                            st.session_state.pantry_items.append(item)
+                            total_added += 1
+                    except Exception:
+                        failed += 1
+            if total_added:
+                st.toast(f"Added {total_added} item(s) from {n} photo(s)", icon="✅")
+            if failed:
+                st.error(f"{failed} photo(s) failed. Try manual entry for those.")
+            if total_added:
                 st.rerun()
-            except Exception as e:
-                st.error(f"Food identification failed: {e}. Try manual entry instead.")
 
     with tab_manual:
         col_name, col_qty = st.columns([2, 1])

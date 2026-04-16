@@ -153,8 +153,9 @@ def _render_nutrient_gap_summary() -> list[dict]:
             suggestions_html = ""
             if suggestions:
                 suggestion_chips = " ".join(
-                    f'<span style="background:rgba(255,255,255,0.6);'
-                    f'border-radius:100px;padding:1px 8px;font-size:0.7rem;">'
+                    f'<span style="background:rgba(255,255,255,0.85);'
+                    f'color:{color};border-radius:100px;padding:1px 8px;'
+                    f'font-size:0.7rem;font-weight:600;">'
                     f'{s}</span>'
                     for s in suggestions
                 )
@@ -222,7 +223,7 @@ def _render_resource_list(resources: list[FoodResource]):
     for r in resources:
         icon = type_icon(r.resource_type)
         lbl = type_label(r.resource_type)
-        card_bg, _, border_c, badge_bg, badge_text = _TYPE_COLORS.get(
+        card_bg, text_c, border_c, badge_bg, badge_text = _TYPE_COLORS.get(
             r.resource_type, ("#FAFAFA", "#424242", "#9E9E9E", "#F5F5F5", "#616161")
         )
 
@@ -230,29 +231,17 @@ def _render_resource_list(resources: list[FoodResource]):
             f'<span style="margin-left:12px;">📞 {r.phone}</span>'
             if r.phone else ""
         )
-        website_html = (
-            f'<div style="margin-top:6px;">'
-            f'<a href="{r.website}" target="_blank" '
-            f'style="color:{border_c};font-size:0.82rem;font-weight:600;'
-            f'text-decoration:none;">🌐 Visit website →</a></div>'
-            if r.website else ""
-        )
-        notes_html = (
-            f'<div style="margin-top:6px;font-size:0.79rem;color:inherit;opacity:0.5;'
-            f'font-style:italic;padding-top:5px;border-top:1px solid rgba(0,0,0,0.06);">'
-            f'ℹ️ {r.notes}</div>'
-            if r.notes else ""
-        )
 
-        st.markdown(f"""
-        <div style="background:{card_bg};border-radius:14px;
-                    padding:1.1rem 1.4rem 0.9rem;
+        # Main card: header + address block. Keep HTML flat to avoid
+        # Streamlit dropping nested tags as raw text.
+        st.markdown(f"""<div style="background:{card_bg};border-radius:14px 14px 0 0;
+                    padding:1.1rem 1.4rem 0.8rem;
                     box-shadow:0 2px 10px rgba(0,0,0,0.07);
-                    margin-bottom:0.75rem;border-left:5px solid {border_c};">
+                    border-left:5px solid {border_c};">
             <div style="display:flex;align-items:flex-start;
                         justify-content:space-between;margin-bottom:0.55rem;
                         flex-wrap:wrap;gap:4px;">
-                <span style="font-size:1.0rem;font-weight:800;color:inherit;">
+                <span style="font-size:1.0rem;font-weight:800;color:{text_c};">
                     {icon} {r.name}
                 </span>
                 <span style="background:{badge_bg};color:{badge_text};
@@ -261,14 +250,44 @@ def _render_resource_list(resources: list[FoodResource]):
                     {lbl}
                 </span>
             </div>
-            <div style="font-size:0.85rem;color:inherit;opacity:0.8;line-height:1.65;">
-                <div>📍 {r.address}, {r.city}, {r.state} {r.zip_code}</div>
-                <div>🕐 {r.hours}</div>
-                <div>👥 {r.eligibility}{phone_html}</div>
+            <div style="font-size:0.85rem;color:{text_c};opacity:0.85;line-height:1.65;">
+                📍 {r.address}, {r.city}, {r.state} {r.zip_code}<br>
+                🕐 {r.hours}<br>
+                👥 {r.eligibility}{phone_html}
             </div>
-            {website_html}
-            {notes_html}
         </div>""", unsafe_allow_html=True)
+
+        # Website link (separate st.markdown to keep HTML simple)
+        if r.website:
+            st.markdown(
+                f'<div style="background:{card_bg};padding:0 1.4rem 0.3rem;'
+                f'border-left:5px solid {border_c};">'
+                f'<a href="{r.website}" target="_blank" '
+                f'style="color:{border_c};font-size:0.82rem;font-weight:600;'
+                f'text-decoration:none;">🌐 Visit website →</a></div>',
+                unsafe_allow_html=True,
+            )
+
+        # Notes (separate st.markdown)
+        if r.notes:
+            st.markdown(
+                f'<div style="background:{card_bg};padding:0.5rem 1.4rem 0.9rem;'
+                f'border-left:5px solid {border_c};border-radius:0 0 14px 14px;'
+                f'font-size:0.79rem;color:{text_c};opacity:0.75;'
+                f'font-style:italic;border-top:1px solid rgba(0,0,0,0.06);'
+                f'margin-bottom:0.75rem;">'
+                f'ℹ️ {r.notes}</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            # Close the card bottom if no notes
+            st.markdown(
+                f'<div style="background:{card_bg};height:0.3rem;'
+                f'border-left:5px solid {border_c};border-radius:0 0 14px 14px;'
+                f'box-shadow:0 2px 10px rgba(0,0,0,0.07);'
+                f'margin-bottom:0.75rem;"></div>',
+                unsafe_allow_html=True,
+            )
 
 
 def _resource_to_dict(r: FoodResource) -> dict:
