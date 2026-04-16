@@ -1,7 +1,7 @@
 # NutriScan Build Plan
 
 ## Context
-NutriScan is an AI-powered nutrition assistant that combats food insecurity through personalized dietary insights. It reads nutrition labels (vision AI, with OCR as offline fallback), identifies food from photos (vision AI), generates nutritious recipes from available ingredients, and connects users to free/low-income food resources nearby. Built by 3 Purdue freshmen (Aarav, Neil, Nuv) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
+NutriScan is an AI-powered nutrition assistant that combats food insecurity through personalized dietary insights. It reads nutrition labels (vision AI, with OCR as offline fallback), identifies food from photos (vision AI), generates nutritious recipes from available ingredients, and connects users to free/low-income food resources nearby. Built by 3 Purdue freshmen (Aarav Chadha, Neil Sachdev, Nuv Ahuja) through Dataception for the undergraduate research symposium on **April 16, 2026**. All-free tech stack.
 
 ## Tech Stack
 - **Python** + **Streamlit** (pure Python frontend)

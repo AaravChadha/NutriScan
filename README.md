@@ -28,7 +28,7 @@ Built by three Purdue University freshmen through [Dataception](https://datacept
 | Member | Contributions |
 |--------|--------------|
 | **Aarav Chadha** | Project planning and architecture. Scaffolding, data models, FDA daily values. LLM integration (prompts, Groq client, analysis pipeline). Food photo recognition (vision prompts, Groq vision client, USDA/OFF bridge). Recipe generator. Vision-based label reader replacing OCR on golden path. Pipeline wire-up, UX verification, error handling. LLM evaluation (29/30, 96.7%). Dark mode theme polish, scroll fix, toast notifications. |
-| **Neil Ahuja** | OCR pipeline (image preprocessor, Tesseract extractor, regex patterns). Unit tests for OCR parsing. Nutrient gap analysis against FDA daily values. Local resource lookup with curated Lafayette/West Lafayette database (11 free food resources). LLM recommendation layer connecting nutrient gaps to nearby resources. |
+| **Neil Sachdev** | OCR pipeline (image preprocessor, Tesseract extractor, regex patterns). Unit tests for OCR parsing. Nutrient gap analysis against FDA daily values. Local resource lookup with curated Lafayette/West Lafayette database (11 free food resources). LLM recommendation layer connecting nutrient gaps to nearby resources. |
 | **Nuv Ahuja** | USDA API client and preservative checker. Health profile sidebar form. Nutrition editor widget. Results display (colored flags, DV% chart, recommendations). Upload Label, Manual Entry, and Snap Food page scaffolds. Tab wiring. Find Free Food tab UI. Comprehensive UI overhaul (CSS theme, grade badges, styled cards, recipe layout). |
 
 ## Tech Stack
