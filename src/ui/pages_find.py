@@ -169,7 +169,7 @@ def _render_nutrient_gap_summary() -> list[dict]:
                 </div>
                 <div style="font-size:1.4rem;font-weight:800;color:{color};
                             margin:2px 0;">
-                    {gap.current_pct_dv}% DV
+                    {gap.current_pct_dv}&#37; DV
                 </div>
                 <div style="height:5px;background:rgba(0,0,0,0.08);
                             border-radius:3px;overflow:hidden;margin:5px 0;">

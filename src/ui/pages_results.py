@@ -177,7 +177,7 @@ def _render_dv_bars(dv_percentages: dict) -> None:
             <div style="display:flex;justify-content:space-between;
                         font-size:12px;color:inherit;opacity:0.8;margin-bottom:3px;">
                 <span>{label}</span>
-                <span style="font-weight:700;color:{text_color};">{v}%</span>
+                <span style="font-weight:700;color:{text_color};">{v}&#37;</span>
             </div>
             <div style="height:9px;background:#EEEEEE;border-radius:5px;overflow:hidden;">
                 <div style="height:100%;width:{display_pct}%;
@@ -185,22 +185,7 @@ def _render_dv_bars(dv_percentages: dict) -> None:
             </div>
         </div>"""
 
-    legend = """
-    <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid rgba(46,125,50,0.15);
-                display:flex;gap:1.2rem;font-size:11px;color:#777;flex-wrap:wrap;">
-        <span><span style="display:inline-block;width:10px;height:10px;
-                           background:#EF5350;border-radius:2px;
-                           margin-right:4px;vertical-align:middle;"></span>≥20% limit</span>
-        <span><span style="display:inline-block;width:10px;height:10px;
-                           background:#43A047;border-radius:2px;
-                           margin-right:4px;vertical-align:middle;"></span>≥20% beneficial</span>
-        <span><span style="display:inline-block;width:10px;height:10px;
-                           background:#4CAF50;border-radius:2px;
-                           margin-right:4px;vertical-align:middle;"></span>5–20% normal</span>
-        <span><span style="display:inline-block;width:10px;height:10px;
-                           background:#FFA726;border-radius:2px;
-                           margin-right:4px;vertical-align:middle;"></span>1–5% low</span>
-    </div>"""
+    legend = ""  # rendered separately via st.caption to avoid HTML complexity
 
     macro_keys = [k for k in _DV_GROUPS["macros"] if k in dv_percentages]
     micro_keys = [k for k in _DV_GROUPS["micros"] if k in dv_percentages]
@@ -214,27 +199,12 @@ def _render_dv_bars(dv_percentages: dict) -> None:
     half = len(macro_bars) // 2 + len(macro_bars) % 2
     macro_col1_html = "".join(macro_bars[:half])
     macro_col2_html = "".join(macro_bars[half:])
-    micro_row_html  = "".join(micro_bars + extra_bars)
 
-    micro_section = ""
-    if micro_row_html:
-        # Micros in a 2-col grid too
-        all_micro = micro_bars + extra_bars
-        mhalf = len(all_micro) // 2 + len(all_micro) % 2
-        micro_section = f"""
-        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid rgba(46,125,50,0.15);">
-            <div style="font-size:0.72rem;font-weight:700;color:#4CAF50;
-                        letter-spacing:0.8px;text-transform:uppercase;
-                        margin-bottom:8px;">🌿 Micronutrients & Minerals</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2.5rem;">
-                <div>{"".join(all_micro[:mhalf])}</div>
-                <div>{"".join(all_micro[mhalf:])}</div>
-            </div>
-        </div>"""
-
-    st.markdown(f"""
-    <div style="background:rgba(128,128,128,0.06);border-radius:14px;padding:1.2rem 1.5rem;
-                box-shadow:0 2px 10px rgba(0,0,0,0.07);border:1px solid rgba(46,125,50,0.15);">
+    # Split into separate st.markdown calls so Streamlit renders each block
+    st.markdown(f"""<div style="background:rgba(128,128,128,0.06);border-radius:14px 14px 0 0;
+                padding:1.2rem 1.5rem 0.8rem;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);border:1px solid rgba(46,125,50,0.15);
+                border-bottom:none;">
         <div style="font-size:0.72rem;font-weight:700;color:#4CAF50;
                     letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;">
             🥩 Macronutrients
@@ -243,9 +213,26 @@ def _render_dv_bars(dv_percentages: dict) -> None:
             <div>{macro_col1_html}</div>
             <div>{macro_col2_html}</div>
         </div>
-        {micro_section}
-        {legend}
     </div>""", unsafe_allow_html=True)
+
+    all_micro = micro_bars + extra_bars
+    if all_micro:
+        mhalf = len(all_micro) // 2 + len(all_micro) % 2
+        st.markdown(f"""<div style="background:rgba(128,128,128,0.06);
+                    padding:0.75rem 1.5rem 0.8rem;
+                    border-left:1px solid rgba(46,125,50,0.15);
+                    border-right:1px solid rgba(46,125,50,0.15);
+                    border-top:1px solid rgba(46,125,50,0.15);">
+            <div style="font-size:0.72rem;font-weight:700;color:#4CAF50;
+                        letter-spacing:0.8px;text-transform:uppercase;
+                        margin-bottom:8px;">🌿 Micronutrients &amp; Minerals</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2.5rem;">
+                <div>{"".join(all_micro[:mhalf])}</div>
+                <div>{"".join(all_micro[mhalf:])}</div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    st.caption("Legend: Red = >=20% limit nutrient | Green = >=20% beneficial | Medium green = 5-20% | Orange = 1-5% low")
 
 
 # ── Main display function ─────────────────────────────────────────────────────

@@ -12,6 +12,7 @@ offline use or when GROQ_API_KEY is unset.
 """
 
 import base64
+import io
 import json
 import os
 import re
@@ -20,6 +21,13 @@ from dataclasses import dataclass
 import streamlit as st
 from dotenv import load_dotenv
 from groq import Groq
+from PIL import Image
+
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass
 
 from src.llm.prompts import (
     build_label_vision_system_prompt,
@@ -110,8 +118,25 @@ def extract_label_with_vision(image_bytes: bytes) -> LabelReadResult | None:
         # error since this is a legitimate "no vision available" state.
         return None
 
+    # Detect format and re-encode HEIC/HEIF/unknown formats to JPEG so
+    # Groq's vision API always gets a format it understands.
+    if image_bytes[:8] == b'\x89PNG\r\n\x1a\n':
+        mime = "image/png"
+    elif image_bytes[:4] == b'RIFF' and image_bytes[8:12] == b'WEBP':
+        mime = "image/webp"
+    elif image_bytes[:3] in (b'\xff\xd8\xff',):
+        mime = "image/jpeg"
+    else:
+        # HEIC, HEIF, or other format — re-encode to JPEG via Pillow
+        buf = io.BytesIO(image_bytes)
+        img = Image.open(buf).convert("RGB")
+        out = io.BytesIO()
+        img.save(out, format="JPEG", quality=90)
+        image_bytes = out.getvalue()
+        mime = "image/jpeg"
+
     b64 = base64.b64encode(image_bytes).decode("utf-8")
-    data_url = f"data:image/jpeg;base64,{b64}"
+    data_url = f"data:{mime};base64,{b64}"
 
     messages = [
         {"role": "system", "content": build_label_vision_system_prompt()},

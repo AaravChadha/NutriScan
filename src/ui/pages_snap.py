@@ -121,14 +121,24 @@ def _step(num: int, label: str, sub: str = "") -> None:
     </div>""", unsafe_allow_html=True)
 
 
-def _conf_pill(conf: str) -> str:
+def _conf_pill(conf) -> str:
     cfg = {
         "high":   ("#E8F5E9", "#1B5E20", "High ✓"),
         "medium": ("#FFF8E1", "#E65100", "Medium"),
         "low":    ("#FFEBEE", "#B71C1C", "Low"),
         "manual": ("#E3F2FD", "#1565C0", "Manual"),
     }
-    bg, color, label = cfg.get((conf or "").lower(), ("#F5F5F5", "#555", conf or "—"))
+    # The vision model may return a numeric confidence (0.0-1.0); bucket it.
+    if isinstance(conf, (int, float)):
+        if conf >= 0.75:
+            key = "high"
+        elif conf >= 0.5:
+            key = "medium"
+        else:
+            key = "low"
+    else:
+        key = str(conf or "").lower()
+    bg, color, label = cfg.get(key, ("#F5F5F5", "#555", str(conf) if conf else "—"))
     return (
         f'<span style="background:{bg};color:{color};padding:2px 9px;'
         f'border-radius:100px;font-size:0.72rem;font-weight:700;">{label}</span>'

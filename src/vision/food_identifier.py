@@ -6,11 +6,19 @@ Snap Food tab (`src/ui/pages_snap.py`).
 """
 
 import base64
+import io
 import json
 import os
 import re
 
 import streamlit as st
+from PIL import Image
+
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -62,8 +70,22 @@ def identify_food(image_bytes: bytes) -> list[dict]:
         return []
 
     # Encode image as base64 data URL. Groq's vision API accepts JPEG/PNG.
+    # Detect format and re-encode HEIC/HEIF/unknown formats to JPEG.
+    if image_bytes[:8] == b'\x89PNG\r\n\x1a\n':
+        mime = "image/png"
+    elif image_bytes[:4] == b'RIFF' and image_bytes[8:12] == b'WEBP':
+        mime = "image/webp"
+    elif image_bytes[:3] in (b'\xff\xd8\xff',):
+        mime = "image/jpeg"
+    else:
+        buf = io.BytesIO(image_bytes)
+        img = Image.open(buf).convert("RGB")
+        out = io.BytesIO()
+        img.save(out, format="JPEG", quality=90)
+        image_bytes = out.getvalue()
+        mime = "image/jpeg"
     b64 = base64.b64encode(image_bytes).decode("utf-8")
-    data_url = f"data:image/jpeg;base64,{b64}"
+    data_url = f"data:{mime};base64,{b64}"
 
     messages = [
         {"role": "system", "content": build_vision_system_prompt()},
